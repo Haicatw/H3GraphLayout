@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -6,41 +7,109 @@ using UnityEngine;
 public class GraphLayout : MonoBehaviour
 {
 
-    [SerializeField] string fileName; //Assets/Data/processedGraph.json
-    [SerializeField] float leafRadius;
+    //public string fileName; 
+    //Assets/Data/processedGraph.json
+    public string networkFolder;
+    public string networkName;
+    public float leafRadius;
     public Node graphRoot;
-    public List<Node> graphNodesList;
-    public List<GameObject> nodesPrimitives;
-    public List<GameObject> edgeHolders;
-    public float EPSILON = Mathf.Epsilon;
+    private List<Node> graphNodesList;
+    //private List<GameObject> nodesPrimitives;
+    //private List<GameObject> edgeHolders;
+    private float EPSILON = Mathf.Epsilon;
+    private Graph graphContainer;
+    private Dictionary<String, int> nodeNameToIdDict;
+    
 
     // Use this for initialization
     void Start()
     {
         //EdgeHolder.AddComponent<LineRenderer>();
         //Configration
-        leafRadius = 0.001f;
+        //leafRadius = 0.001f;
 
         //Initialization
         //graphRoot = new Node(); 
         graphNodesList = new List<Node>();
-        nodesPrimitives = new List<GameObject>();
-        edgeHolders = new List<GameObject>();
+        //nodesPrimitives = new List<GameObject>();
+        //edgeHolders = new List<GameObject>();
+        nodeNameToIdDict = new Dictionary<string, int>();
 
         //Read in data
-        ReadInGraphData("");
+        ReadInGraphData();
+        DebugPrint(this.graphRoot);
+        CountNodeDecendents(this.graphRoot);
         //Compute initial layout
-        ComputeRadius(graphRoot);
-        SortSubtrees(graphRoot);
-        ComputePolar(graphRoot);
+        ComputeRadius(this.graphRoot);
+        SortSubtrees(this.graphRoot);
+        ComputePolar(this.graphRoot);
+        DebugPrint(this.graphRoot);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
 
     }
 
-    private void ReadInGraphData(string path)
+    public void readFile()
     {
-        if (System.IO.File.Exists(path))
-        {
+        string filename = Application.streamingAssetsPath + "/" + networkFolder + "/" + networkName;
+        //print(filename);
+        this.graphContainer = JsonUtility.FromJson<Graph>(File.ReadAllText(filename));
+    }
 
+    public void ReadInGraphData()
+    {
+        readFile();
+        int counter = 0;
+        foreach(GraphNode node in this.graphContainer.nodes)
+        {
+            node.id = counter;
+            this.graphNodesList.Add(new Node(node.id, node.nodeName, node.level, node.isRootNode));
+            this.nodeNameToIdDict.Add(node.nodeName, node.id);
+
+            if (node.isRootNode)
+            {
+                this.graphRoot = graphNodesList[counter];
+            }
+
+            counter++;
+        }
+
+        foreach(Link link in this.graphContainer.links)
+        {
+            //print(link.source);
+            Node tempNodeA = this.graphNodesList[this.nodeNameToIdDict[link.source]];
+            Node tempNodeB = this.graphNodesList[this.nodeNameToIdDict[link.target]];
+            
+            if (tempNodeA.nodeLevel > tempNodeB.nodeLevel)
+            {
+                tempNodeB.nodeChildren.Add(tempNodeA);
+            } else
+            {
+                tempNodeA.nodeChildren.Add(tempNodeB);
+            }
+        }
+    }
+
+    public void CountNodeDecendents(Node parentNode)
+    {
+        if (parentNode.nodeChildren.Count == 0)
+        {
+            parentNode.nodeNumDecendents = 0;
+            return;
+        }
+        else
+        {
+            int totalDecendents = 0;
+            foreach(var child in parentNode.nodeChildren)
+            {
+                CountNodeDecendents(child);
+                totalDecendents += child.nodeNumDecendents;
+            }
+            parentNode.nodeNumDecendents = totalDecendents;
+            return;
         }
     }
 
@@ -59,12 +128,6 @@ public class GraphLayout : MonoBehaviour
             }
         }
         return;
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     public void ComputeRadius(Node parentNode)
@@ -150,6 +213,29 @@ public class GraphLayout : MonoBehaviour
         return;
     }
 
+    public void DebugPrint(Node parentNode)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+        else
+        {
+            foreach(var child in parentNode.nodeChildren)
+            {
+                Debug.Log(child.nodeId);
+                Debug.Log(child.nodeName);
+                Debug.Log(child.nodeNumDecendents);
+                Debug.Log(child.nodeHemspherePhi);
+                Debug.Log(child.nodeHemsphereRadius);
+                Debug.Log(child.nodeHemsphereTheta);
+
+                DebugPrint(child);
+                return;
+            }
+        }
+    }
+
     /*
 
     public void DrawNodes()
@@ -197,6 +283,9 @@ public class GraphLayout : MonoBehaviour
 
 public class Node
 {
+    public int nodeId;
+    public string nodeName;
+    public int nodeLevel;
     public Point4d nodeEuclideanPosition;
     public Point4d nodeRelativeHyperbolicProjectionPosition;
     public float nodeAnglePhi;
@@ -210,8 +299,11 @@ public class Node
     public int nodeNumDecendents;
     public bool nodeIsRoot;
 
-    public Node()
+    public Node(int nodeId, string nodeName, int nodeLevel, bool nodeIsRoot)
     {
+        this.nodeId = nodeId;
+        this.nodeName = nodeName;
+        this.nodeLevel = nodeLevel;
         this.nodeEuclideanPosition = new Point4d(0, 0, 0, 1);
         this.nodeRelativeHyperbolicProjectionPosition = new Point4d(0, 0, 0, 1);
         this.nodeAnglePhi = 0.0f;
@@ -223,7 +315,7 @@ public class Node
         this.nodeChildren = new List<Node>();
         this.nodeParent = null;
         this.nodeNumDecendents = 0;
-        this.nodeIsRoot = false;
+        this.nodeIsRoot = nodeIsRoot;
     }
 
     public void SetNodeEuclideanPosition(float x, float y, float z, float w)
@@ -276,7 +368,252 @@ public class Node
     }
 }
 
-public class TransformUtility
+public class Matrix4d
 {
+    public Matrix4x4 matrix4d;
 
+    public Matrix4d()
+    {
+        matrix4d = new Matrix4x4();
+    }
+
+    public void SetColumn(int index, Point4d ColumnValue)
+    {
+        matrix4d.SetColumn(index, ColumnValue.GetVector4());
+    }
+
+    public void SetRow(int index, Point4d ColumnValue)
+    {
+        matrix4d.SetRow(index, ColumnValue.GetVector4());
+    }
+
+    public Point4d GetRow(int index)
+    {
+        return matrix4d.GetRow(index);
+    }
+
+    public Point4d GetColumn(int index)
+    {
+        return matrix4d.GetColumn(index);
+    }
+
+    public void transform(Point4d v)
+    {
+        float x = this.matrix4d.m00 * v.x + (this.matrix4d.m01 * v.y) + (this.matrix4d.m02 * v.z) + (this.matrix4d.m03 * v.w);
+        float y = this.matrix4d.m10 * v.x + (this.matrix4d.m11 * v.y) + (this.matrix4d.m12 * v.z) + (this.matrix4d.m13 * v.w);
+        float z = this.matrix4d.m20 * v.x + (this.matrix4d.m21 * v.y) + (this.matrix4d.m22 * v.z) + (this.matrix4d.m23 * v.w);
+        float w = this.matrix4d.m30 * v.x + (this.matrix4d.m31 * v.y) + (this.matrix4d.m32 * v.z) + (this.matrix4d.m33 * v.w);
+
+        v.x = x; v.y = y; v.z = z; v.w = w;
+    }
+
+    public void rotX(float theta)
+    {
+        float cos_theta = Mathf.Cos(theta);
+        float sin_theta = Mathf.Sin(theta);
+        float neg_sin_theta = -sin_theta;
+
+        this.matrix4d.m00 = 1; this.matrix4d.m01 = 0; this.matrix4d.m02 = 0; this.matrix4d.m03 = 0;
+        this.matrix4d.m10 = 0; this.matrix4d.m11 = cos_theta; this.matrix4d.m12 = neg_sin_theta; this.matrix4d.m13 = 0;
+        this.matrix4d.m20 = 0; this.matrix4d.m21 = sin_theta; this.matrix4d.m22 = cos_theta; this.matrix4d.m23 = 0;
+        this.matrix4d.m30 = 0; this.matrix4d.m31 = 0; this.matrix4d.m32 = 0; this.matrix4d.m33 = 1;
+    }
+
+    public void rotY(float theta)
+    {
+        float cos_theta = Mathf.Cos(theta);
+        float sin_theta = Mathf.Sin(theta);
+        float neg_sin_theta = -sin_theta;
+
+        this.matrix4d.m00 = cos_theta; this.matrix4d.m01 = 0; this.matrix4d.m02 = sin_theta; this.matrix4d.m03 = 0;
+        this.matrix4d.m10 = 0; this.matrix4d.m11 = 1; this.matrix4d.m12 = 0; this.matrix4d.m13 = 0;
+        this.matrix4d.m20 = neg_sin_theta; this.matrix4d.m21 = 0; this.matrix4d.m22 = cos_theta; this.matrix4d.m23 = 0;
+        this.matrix4d.m30 = 0; this.matrix4d.m31 = 0; this.matrix4d.m32 = 0; this.matrix4d.m33 = 1;
+    }
+
+    public void rotZ(float theta)
+    {
+        float cos_theta = Mathf.Cos(theta);
+        float sin_theta = Mathf.Sin(theta);
+        float neg_sin_theta = -sin_theta;
+
+        this.matrix4d.m00 = cos_theta; this.matrix4d.m01 = neg_sin_theta; this.matrix4d.m02 = 0; this.matrix4d.m03 = 0;
+        this.matrix4d.m10 = sin_theta; this.matrix4d.m11 = cos_theta; this.matrix4d.m12 = 0; this.matrix4d.m13 = 0;
+        this.matrix4d.m20 = 0; this.matrix4d.m21 = 0; this.matrix4d.m22 = 1; this.matrix4d.m23 = 0;
+        this.matrix4d.m30 = 0; this.matrix4d.m31 = 0; this.matrix4d.m32 = 0; this.matrix4d.m33 = 1;
+    }
+
+    public void setIdentity()
+    {
+        this.matrix4d.m00 = 1; this.matrix4d.m01 = 0; this.matrix4d.m02 = 0; this.matrix4d.m03 = 0;
+        this.matrix4d.m10 = 0; this.matrix4d.m11 = 1; this.matrix4d.m12 = 0; this.matrix4d.m13 = 0;
+        this.matrix4d.m20 = 0; this.matrix4d.m21 = 0; this.matrix4d.m22 = 1; this.matrix4d.m23 = 0;
+        this.matrix4d.m30 = 0; this.matrix4d.m31 = 0; this.matrix4d.m32 = 0; this.matrix4d.m33 = 1;
+    }
+
+    public static Matrix4d operator *(Matrix4d lhs, Matrix4d rhs)
+    {
+        return lhs.matrix4d * rhs.matrix4d;
+    }
+
+    public static Matrix4d operator *(Matrix4d lhs, float rhs)
+    {
+        Matrix4d temp = new Matrix4d();
+        temp.SetRow(0, lhs.GetRow(0));
+        temp.SetRow(1, lhs.GetRow(1));
+        temp.SetRow(2, lhs.GetRow(2));
+        temp.SetRow(3, lhs.GetRow(3));
+        return temp;
+    }
+
+    public static implicit operator Matrix4d(Matrix4x4 m4x4)
+    {
+        Matrix4d temp = new Matrix4d();
+        temp.SetRow(0, m4x4.GetRow(0));
+        temp.SetRow(1, m4x4.GetRow(1));
+        temp.SetRow(2, m4x4.GetRow(2));
+        temp.SetRow(3, m4x4.GetRow(3));
+        return temp;
+    }
+}
+
+
+public class Point4d
+{
+    public float x;
+    public float y;
+    public float z;
+    public float w;
+
+    public Point4d(float x = 0, float y = 0, float z = 0, float w = 1)
+    {
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.w = w;
+    }
+
+    public void scale(float s)
+    {
+        this.x = this.x * s;
+        this.y = this.y * s;
+        this.z = this.z * s;
+        this.w = this.w * s;
+    }
+
+    // this = s*t1 + t2
+    public void scaleAdd(float s, Point4d t1, Point4d t2)
+    {
+        float tx = t1.x * s + (t2.x);
+        float ty = t1.y * s + (t2.y);
+        float tz = t1.z * s + (t2.z);
+        float tw = t1.w * s + (t2.w);
+
+        this.x = tx; this.y = ty; this.z = tz; this.w = tw;
+    }
+
+    public void project(Point4d p1)
+    {
+        float tx = p1.x / (p1.w);
+        float ty = p1.y / (p1.w);
+        float tz = p1.z / (p1.w);
+
+        this.x = tx; this.y = ty; this.z = tz; this.w = 1.0f;
+    }
+
+    public void sub(Point4d t1)
+    {
+        this.x = this.x - (t1.x);
+        this.y = this.y - (t1.y);
+        this.z = this.z - (t1.z);
+        this.w = this.w - (t1.w);
+    }
+
+    public void set(Point4d t1)
+    {
+        this.x = t1.x; this.y = t1.y; this.z = t1.z; this.w = t1.w;
+    }
+
+    // Euclidean norm of homogeneous coordinates [and equivalent to
+    // Point4d.distance(new Point4d(0, 0, 0, 0))].
+    public float vectorLength(Point4d p)
+    {
+        float x2 = this.x * this.x;
+        float y2 = this.y * this.y;
+        float z2 = this.z * this.z;
+        float w2 = this.w * this.w;
+        return x2 + (y2) + (z2) / Mathf.Sqrt(w2);
+    }
+
+    // The usual vector dot product.
+    public float vectorDot(Point4d v1)
+    {
+        float tx = this.x * (v1.x);
+        float ty = this.y * (v1.y);
+        float tz = this.z * (v1.z);
+        float tw = this.w * (v1.w);
+        return tx + (ty) + (tz) + (tw);
+    }
+
+    // The usual vector dot product computed from x, y, and z only.
+    public float vectorDot3(Point4d v1)
+    {
+        float tx = this.x * (v1.x);
+        float ty = this.y * (v1.y);
+        float tz = this.z * (v1.z);
+        return tx + (ty) + (tz);
+    }
+
+    // Returns the Minkowski inner product of this with y.
+    public float minkowski(Point4d v)
+    {
+        float tx = this.x * (v.x);
+        float ty = this.y * (v.y);
+        float tz = this.z * (v.z);
+        float tw = this.w * (v.w);
+        return tx + (ty) + (tz) - (tw);
+    }
+
+    public static implicit operator Point4d(Vector4 vect)
+    {
+        return new Point4d(vect.x, vect.y, vect.z, vect.w);
+    }
+
+    public Vector4 GetVector4()
+    {
+        return new Vector4(this.x, this.y, this.z, this.w);
+    }
+}
+
+[System.Serializable]
+public class Graph
+{
+    public Link[] links;
+    public metadata graph_properties;
+    public GraphNode[] nodes;
+}
+
+[System.Serializable]
+public class Link
+{
+    public string source;
+    public string target;
+    public float value;
+}
+
+[System.Serializable]
+public class metadata
+{
+    public int NumNodes;
+    public int NumLinks;
+    public int MaxLevel;
+}
+
+[System.Serializable]
+public class GraphNode
+{
+    public int id;
+    public string nodeName;
+    public int level;
+    public bool isRootNode;
 }

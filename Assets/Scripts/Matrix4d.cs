@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/*
 public class Matrix4d
 {
     public Matrix4x4 matrix4d;
@@ -110,3 +111,4 @@ public class Matrix4d
         return temp;
     }
 }
+*/

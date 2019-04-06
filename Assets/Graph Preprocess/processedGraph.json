@@ -1,387 +1,387 @@
 {
     "nodes": [
         {
-            "id": "Myriel",
+            "nodeName": "Myriel",
             "level": 0,
             "isRootNode": true
         },
         {
-            "id": "Napoleon",
+            "nodeName": "Napoleon",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Mlle.Baptistine",
+            "nodeName": "Mlle.Baptistine",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Mme.Magloire",
+            "nodeName": "Mme.Magloire",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "CountessdeLo",
+            "nodeName": "CountessdeLo",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Geborand",
+            "nodeName": "Geborand",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Champtercier",
+            "nodeName": "Champtercier",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Cravatte",
+            "nodeName": "Cravatte",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Count",
+            "nodeName": "Count",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "OldMan",
+            "nodeName": "OldMan",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Labarre",
+            "nodeName": "Labarre",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Valjean",
+            "nodeName": "Valjean",
             "level": 1,
             "isRootNode": false
         },
         {
-            "id": "Marguerite",
+            "nodeName": "Marguerite",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Mme.deR",
+            "nodeName": "Mme.deR",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Isabeau",
+            "nodeName": "Isabeau",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Gervais",
+            "nodeName": "Gervais",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Tholomyes",
+            "nodeName": "Tholomyes",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Listolier",
+            "nodeName": "Listolier",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Fameuil",
+            "nodeName": "Fameuil",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Blacheville",
+            "nodeName": "Blacheville",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Favourite",
+            "nodeName": "Favourite",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Dahlia",
+            "nodeName": "Dahlia",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Zephine",
+            "nodeName": "Zephine",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Fantine",
+            "nodeName": "Fantine",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Mme.Thenardier",
+            "nodeName": "Mme.Thenardier",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Thenardier",
+            "nodeName": "Thenardier",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Cosette",
+            "nodeName": "Cosette",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Javert",
+            "nodeName": "Javert",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Fauchelevent",
+            "nodeName": "Fauchelevent",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Bamatabois",
+            "nodeName": "Bamatabois",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Perpetue",
+            "nodeName": "Perpetue",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Simplice",
+            "nodeName": "Simplice",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Scaufflaire",
+            "nodeName": "Scaufflaire",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Woman1",
+            "nodeName": "Woman1",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Judge",
+            "nodeName": "Judge",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Champmathieu",
+            "nodeName": "Champmathieu",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Brevet",
+            "nodeName": "Brevet",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Chenildieu",
+            "nodeName": "Chenildieu",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Cochepaille",
+            "nodeName": "Cochepaille",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Pontmercy",
+            "nodeName": "Pontmercy",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Boulatruelle",
+            "nodeName": "Boulatruelle",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Eponine",
+            "nodeName": "Eponine",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Anzelma",
+            "nodeName": "Anzelma",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Woman2",
+            "nodeName": "Woman2",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "MotherInnocent",
+            "nodeName": "MotherInnocent",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Gribier",
+            "nodeName": "Gribier",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Jondrette",
+            "nodeName": "Jondrette",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Mme.Burgon",
+            "nodeName": "Mme.Burgon",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Gavroche",
+            "nodeName": "Gavroche",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Gillenormand",
+            "nodeName": "Gillenormand",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Magnon",
+            "nodeName": "Magnon",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Mlle.Gillenormand",
+            "nodeName": "Mlle.Gillenormand",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "Mme.Pontmercy",
+            "nodeName": "Mme.Pontmercy",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Mlle.Vaubois",
+            "nodeName": "Mlle.Vaubois",
             "level": 7,
             "isRootNode": false
         },
         {
-            "id": "Lt.Gillenormand",
+            "nodeName": "Lt.Gillenormand",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Marius",
+            "nodeName": "Marius",
             "level": 6,
             "isRootNode": false
         },
         {
-            "id": "BaronessT",
+            "nodeName": "BaronessT",
             "level": 7,
             "isRootNode": false
         },
         {
-            "id": "Mabeuf",
+            "nodeName": "Mabeuf",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Enjolras",
+            "nodeName": "Enjolras",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Combeferre",
+            "nodeName": "Combeferre",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Prouvaire",
+            "nodeName": "Prouvaire",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Feuilly",
+            "nodeName": "Feuilly",
             "level": 7,
             "isRootNode": false
         },
         {
-            "id": "Courfeyrac",
+            "nodeName": "Courfeyrac",
             "level": 5,
             "isRootNode": false
         },
         {
-            "id": "Bahorel",
+            "nodeName": "Bahorel",
             "level": 7,
             "isRootNode": false
         },
         {
-            "id": "Bossuet",
+            "nodeName": "Bossuet",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Joly",
+            "nodeName": "Joly",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Grantaire",
+            "nodeName": "Grantaire",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "MotherPlutarch",
+            "nodeName": "MotherPlutarch",
             "level": 4,
             "isRootNode": false
         },
         {
-            "id": "Gueulemer",
+            "nodeName": "Gueulemer",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Babet",
+            "nodeName": "Babet",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Claquesous",
+            "nodeName": "Claquesous",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Montparnasse",
+            "nodeName": "Montparnasse",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Toussaint",
+            "nodeName": "Toussaint",
             "level": 2,
             "isRootNode": false
         },
         {
-            "id": "Child1",
+            "nodeName": "Child1",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Child2",
+            "nodeName": "Child2",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Brujon",
+            "nodeName": "Brujon",
             "level": 3,
             "isRootNode": false
         },
         {
-            "id": "Mme.Hucheloup",
+            "nodeName": "Mme.Hucheloup",
             "level": 3,
             "isRootNode": false
         }

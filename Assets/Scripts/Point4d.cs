@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/*
 public class Point4d
 {
     public float x;
@@ -108,3 +108,5 @@ public class Point4d
         return new Vector4(this.x, this.y, this.z, this.w);
     }
 }
+
+    */
