@@ -38,11 +38,16 @@ public class GraphLayout : MonoBehaviour
         //Read in data
         ReadInGraphData();
         DebugPrint(this.graphRoot);
+        Debug.Log("Finish Loading");
         CountNodeDecendents(this.graphRoot);
+        Debug.Log("Finish Counting");
         //Compute initial layout
         ComputeRadius(this.graphRoot);
+        Debug.Log("Finish Calculating Radius");
         SortSubtrees(this.graphRoot);
+        Debug.Log("Finish Sorting");
         ComputePolar(this.graphRoot);
+        Debug.Log("Finish Polar");
         DebugPrint(this.graphRoot);
     }
 
