@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/*
 class HyperbolicMath
 {
 
@@ -13,45 +13,7 @@ class HyperbolicMath
     public static Matrix4d GetReflectionMatrix(Point4d point)
     {
         //rflection = I - 2 * p * pTrans * I31 / <p, p>h
-        /*
-        Matrix4x4 I = new Matrix4x4();
-        I.SetRow(0, new Vector4(1, 0, 0, 0));
-        I.SetRow(1, new Vector4(0, 1, 0, 0));
-        I.SetRow(2, new Vector4(0, 0, 1, 0));
-        I.SetRow(3, new Vector4(0, 0, 0, 1));
-
-        Matrix4x4 I31 = new Matrix4x4();
-        I31.SetRow(0, new Vector4(1, 0, 0, 0));
-        I31.SetRow(1, new Vector4(0, 1, 0, 0));
-        I31.SetRow(2, new Vector4(0, 0, 1, 0));
-        I31.SetRow(3, new Vector4(0, 0, 0, -1));
-
-        Matrix4x4 PointMultiplyPointTranspose = new Matrix4x4();
-        //PointMultiplyPointTranspose.SetRow(0, new Vector4(point.x * point.x * 2, point.x * point.y * 2, point.x * point.z * 2, point.x * point.w * 2));
-        //PointMultiplyPointTranspose.SetRow(1, new Vector4(point.x * point.y * 2, point.y * point.y * 2, point.y * point.z * 2, point.y * point.w * 2));
-        //PointMultiplyPointTranspose.SetRow(2, new Vector4(point.x * point.z * 2, point.y * point.z * 2, point.z * point.z * 2, point.z * point.w * 2));
-        //PointMultiplyPointTranspose.SetRow(3, new Vector4(point.x * point.w * 2, point.y * point.w * 2, point.z * point.w * 2, point.w * point.w * 2));
-        //TODO: cross product
-
-        float minkowski = MinkowskiInnerProduct(point, point);
-
-        Matrix4x4 result = new Matrix4x4();
-
-        //TODO: check if it is cross product or dot product
-        result = PointMultiplyPointTranspose * I31;
-
-        result.SetRow(0, new Vector4(result[0, 0] / minkowski, result[0, 1] / minkowski, result[0, 2] / minkowski, result[0, 3] / minkowski));
-        result.SetRow(1, new Vector4(result[1, 0] / minkowski, result[1, 1] / minkowski, result[1, 2] / minkowski, result[1, 3] / minkowski));
-        result.SetRow(2, new Vector4(result[2, 0] / minkowski, result[2, 1] / minkowski, result[2, 2] / minkowski, result[2, 3] / minkowski));
-        result.SetRow(3, new Vector4(result[3, 0] / minkowski, result[3, 1] / minkowski, result[3, 2] / minkowski, result[3, 3] / minkowski));
-
-        result.SetRow(0, new Vector4(1 - result[0, 0], 0 - result[0, 1], 0 - result[0, 2], 0 - result[0, 3]));
-        result.SetRow(1, new Vector4(0 - result[1, 0], 1 - result[1, 1], 0 - result[1, 2], 0 - result[1, 3]));
-        result.SetRow(2, new Vector4(0 - result[2, 0], 0 - result[2, 1], 1 - result[2, 2], 0 - result[2, 3]));
-        result.SetRow(3, new Vector4(0 - result[3, 0], 0 - result[3, 1], 0 - result[3, 2], 1 - result[3, 3]));
-
-        return result;
-        */
+        
         float xx = point.x * point.x;
         float xy = point.x * point.y;
         float xz = point.x * point.z;
@@ -114,3 +76,44 @@ class HyperbolicMath
 
 
 }
+*/
+
+/*
+    Matrix4x4 I = new Matrix4x4();
+    I.SetRow(0, new Vector4(1, 0, 0, 0));
+    I.SetRow(1, new Vector4(0, 1, 0, 0));
+    I.SetRow(2, new Vector4(0, 0, 1, 0));
+    I.SetRow(3, new Vector4(0, 0, 0, 1));
+
+    Matrix4x4 I31 = new Matrix4x4();
+    I31.SetRow(0, new Vector4(1, 0, 0, 0));
+    I31.SetRow(1, new Vector4(0, 1, 0, 0));
+    I31.SetRow(2, new Vector4(0, 0, 1, 0));
+    I31.SetRow(3, new Vector4(0, 0, 0, -1));
+
+    Matrix4x4 PointMultiplyPointTranspose = new Matrix4x4();
+    //PointMultiplyPointTranspose.SetRow(0, new Vector4(point.x * point.x * 2, point.x * point.y * 2, point.x * point.z * 2, point.x * point.w * 2));
+    //PointMultiplyPointTranspose.SetRow(1, new Vector4(point.x * point.y * 2, point.y * point.y * 2, point.y * point.z * 2, point.y * point.w * 2));
+    //PointMultiplyPointTranspose.SetRow(2, new Vector4(point.x * point.z * 2, point.y * point.z * 2, point.z * point.z * 2, point.z * point.w * 2));
+    //PointMultiplyPointTranspose.SetRow(3, new Vector4(point.x * point.w * 2, point.y * point.w * 2, point.z * point.w * 2, point.w * point.w * 2));
+    //TODO: cross product
+
+    float minkowski = MinkowskiInnerProduct(point, point);
+
+    Matrix4x4 result = new Matrix4x4();
+
+    //TODO: check if it is cross product or dot product
+    result = PointMultiplyPointTranspose * I31;
+
+    result.SetRow(0, new Vector4(result[0, 0] / minkowski, result[0, 1] / minkowski, result[0, 2] / minkowski, result[0, 3] / minkowski));
+    result.SetRow(1, new Vector4(result[1, 0] / minkowski, result[1, 1] / minkowski, result[1, 2] / minkowski, result[1, 3] / minkowski));
+    result.SetRow(2, new Vector4(result[2, 0] / minkowski, result[2, 1] / minkowski, result[2, 2] / minkowski, result[2, 3] / minkowski));
+    result.SetRow(3, new Vector4(result[3, 0] / minkowski, result[3, 1] / minkowski, result[3, 2] / minkowski, result[3, 3] / minkowski));
+
+    result.SetRow(0, new Vector4(1 - result[0, 0], 0 - result[0, 1], 0 - result[0, 2], 0 - result[0, 3]));
+    result.SetRow(1, new Vector4(0 - result[1, 0], 1 - result[1, 1], 0 - result[1, 2], 0 - result[1, 3]));
+    result.SetRow(2, new Vector4(0 - result[2, 0], 0 - result[2, 1], 1 - result[2, 2], 0 - result[2, 3]));
+    result.SetRow(3, new Vector4(0 - result[3, 0], 0 - result[3, 1], 0 - result[3, 2], 1 - result[3, 3]));
+
+    return result;
+    */
