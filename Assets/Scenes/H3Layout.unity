@@ -160,7 +160,7 @@ MonoBehaviour:
   leafRadius: 0.0025
   color: {r: 0.1462264, g: 0.37742025, b: 1, a: 1}
   lineMaterial: {fileID: 2100000, guid: 0de6a2d823d9ffd46aecc5d085fe6097, type: 2}
-  globalScaler: 10000
+  globalScaler: 5000
   lineWidth: 0.2
 --- !u!1 &170076733
 GameObject:
