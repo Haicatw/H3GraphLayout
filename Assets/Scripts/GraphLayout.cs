@@ -367,6 +367,7 @@ public class GraphLayout : MonoBehaviour
             }
         }
         */
+        /*
         if (parentNode.nodeNumDecendents == 0)
         {
             return;
@@ -405,8 +406,9 @@ public class GraphLayout : MonoBehaviour
                 //xAngRot += Point4d.getRotAngleX(new Point4d(childCoord.x, childCoord.y, childCoord.z));
                 //yAngRot += Point4d.getRotAngleY(new Point4d(childCoord.x, childCoord.y, childCoord.z));
 
-                Quaternion rotation = Quaternion.Euler(xAngRot / Mathf.PI * 180, yAngRot / Mathf.PI * 180, 0.0f);
-
+                //Quaternion rotation = Quaternion.Euler(xAngRot / Mathf.PI * 180, yAngRot / Mathf.PI * 180, 0.0f);
+                //Quaternion rotation = Quaternion.Euler(child.nodeHemspherePhi / Mathf.PI * 180, child.nodeHemsphereTheta / Mathf.PI * 180, 0.0f);
+                Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
                 //Matrix4x4 rotationMatrix = Matrix4x4.Rotate(rotation);
                 //childCoord = rotationMatrix.MultiplyPoint(childCoord);
 
@@ -428,8 +430,9 @@ public class GraphLayout : MonoBehaviour
                 ComputeCoordinatesEuclidean(child);
             }
         }
-       
+       */
         //ComputeCoordinatesEuclideanTest(parentNode, 0.0f, 0.0f);
+        ComputeCoordinatesEuclideanTest2(parentNode, HyperbolicTransformation.I4.matrix4d);
     }
 
     public void ComputeCoordinatesEuclideanTest(Node parentNode, float PhiCumulative, float ThetaCumulative)
@@ -440,7 +443,7 @@ public class GraphLayout : MonoBehaviour
         }
         else
         {
-            /*
+            
             //Matrix4d rotationOfCoordinate = HyperbolicTransformation.buildCanonicalOrientationEuclidean(HyperbolicTransformation.ORIGIN4, parentNode.nodeEuclideanPosition);
             Point4d tempTransPoint = parentNode.nodeRelativeHyperbolicProjectionPosition;
             tempTransPoint.x += parentNode.nodeHemsphereRadius;
@@ -462,8 +465,36 @@ public class GraphLayout : MonoBehaviour
                 
                 ComputeCoordinatesEuclideanTest(child, PhiCumulative + child.nodeHemspherePhi, ThetaCumulative + child.nodeHemsphereTheta);
             }
-            */
+            
 
+    }
+}
+
+    public void ComputeCoordinatesEuclideanTest2(Node parentNode, Matrix4x4 parentTransformation)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+        else
+        {
+            foreach(Node child in parentNode.nodeChildren)
+            {
+                Vector3 childCoord = Point4d.projectAndGetVect3(child.nodeRelativeHyperbolicProjectionPosition);
+                Matrix4x4 nextRotation = new Matrix4x4();
+                Quaternion q = Quaternion.Euler(- child.nodeHemspherePhi / Mathf.PI * 180, child.nodeHemsphereTheta / Mathf.PI * 180, 0.0f);
+                nextRotation = Matrix4x4.Rotate(q);
+                nextRotation *= parentTransformation;
+
+                Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
+                Matrix4x4 m = Matrix4x4.TRS(new Vector3(HyperbolicMath.euclideanDistance(parentNode.nodeHemsphereRadius) + parentNode.nodeEuclideanPosition.x, parentNode.nodeEuclideanPosition.y, parentNode.nodeEuclideanPosition.z), rotation, new Vector3(globalScaler, globalScaler, globalScaler));
+
+                //childCoord = parentTransformation.MultiplyPoint(childCoord);
+                childCoord = m.MultiplyPoint(childCoord);
+
+                child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
+                ComputeCoordinatesEuclideanTest2(child, nextRotation);
+            }
         }
     }
 
@@ -982,14 +1013,38 @@ public class HyperbolicTransformation
     {
         Point4d orientation = new Point4d(b.x - a.x, b.y - a.y, b.z - a.z);
         //float r = Mathf.Sqrt(orientation.x * orientation.x + orientation.y * orientation.y + orientation.z * orientation.z);
-        float theta = Mathf.Atan(orientation.y / orientation.x);
-        float phi = Mathf.Atan(Mathf.Sqrt(orientation.x * orientation.x + orientation.y * orientation.y) / orientation.z);
-        Matrix4d rotationMat = new Matrix4d();
-        rotationMat.rotX(theta);
-        Matrix4d rotationMatResult = new Matrix4d();
-        rotationMatResult.rotZ(phi);
-        rotationMatResult *= rotationMat;
-        return rotationMatResult; //TODO: implement
+        float theta;
+        float phi;
+        if (orientation.x == 0.0f)
+        {
+            theta = Mathf.Atan(orientation.y / orientation.x);
+        }
+        else
+        {
+            theta = 0.0f;
+        }
+
+        if (orientation.z == 0.0f)
+        {
+            phi = Mathf.Atan(Mathf.Sqrt(orientation.x * orientation.x + orientation.y * orientation.y) / orientation.z);
+        }
+        else
+        {
+            phi = 0.0f;
+        }
+        //phi = Mathf.Atan(Mathf.Sqrt(orientation.x * orientation.x + orientation.y * orientation.y) / orientation.z);
+
+        //Matrix4d rotationMat = new Matrix4d();
+        //rotationMat.rotX(theta);
+        //Matrix4d rotationMatResult = new Matrix4d();
+        //rotationMatResult.rotZ(phi);
+        //rotationMatResult *= rotationMat;
+        //return rotationMatResult;
+
+        Matrix4x4 rotationMat = new Matrix4x4();
+        Quaternion quaternion = Quaternion.Euler(phi / Mathf.PI * 180, theta / Mathf.PI * 180, 0.0f);
+        rotationMat = Matrix4x4.Rotate(quaternion);
+        return rotationMat;
     }
 
     public static Matrix4d buildCanonicalOrientation(Point4d a, Point4d b)
