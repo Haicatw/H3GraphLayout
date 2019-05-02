@@ -15,8 +15,9 @@ public class GraphLayout : MonoBehaviour
     public Node graphRoot;
     public Color color;
     public Material lineMaterial;
-    public double globalScaler;
-    public double lineWidth;
+    public float globalScaler;
+    public float lineWidth;
+    public float randeringRadius;
     private List<Node> graphNodesList;
     private List<GameObject> nodesPrimitives;
     private List<GameObject> edgeHolders;
@@ -40,6 +41,14 @@ public class GraphLayout : MonoBehaviour
         edgeHolders = new List<GameObject>();
         nodeNameToIdDict = new Dictionary<string, int>();
         //globalScaler = 1000.0;
+
+        Point4d a = new Point4d(0.2, 0, 0, 1);
+        Point4d b = new Point4d(-0.5, -0.5, 0, 1);
+        Point4d bp = new Point4d(0.3, -0.7, 0, 1);
+        Matrix4d translationMat = new Matrix4d();
+        translationMat = HyperbolicMath.getTranslationMatrix(b, bp);
+        Point4d at = new Point4d(0.2, 0, 0, 1);
+        translationMat.transform(at);
 
         //Read in data
         ReadInGraphData();
@@ -171,14 +180,14 @@ public class GraphLayout : MonoBehaviour
                 //Hyperbolic Space Case:
                 //H3Math.TWO_PI * (H3Math.cosh(r / K) - 1.0);
                 //parentHemsphereArea += (double)(Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius / 2) - 1));
-                parentHemsphereArea += (double)(Math.Cosh(child.nodeHemsphereRadius) - 1);
+                parentHemsphereArea += (double)(Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius) - 1));
             }
             //Euclidean Space Case:
             //parentNode.nodeHemsphereRadius = Math.Sqrt(parentHemsphereArea);
             //Hyperbolic Space Case:
             //K * H3Math.asinh(Math.sqrt(area / (H3Math.TWO_PI * K * K)));
             //parentNode.nodeHemsphereRadius = (double)HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea / (Math.PI * 2 * 4))) * 2;
-            parentNode.nodeHemsphereRadius = (double)HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea));
+            parentNode.nodeHemsphereRadius = (double)HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea / (Math.PI * 2)));
         }
         
         return;
@@ -286,7 +295,7 @@ public class GraphLayout : MonoBehaviour
             return;
         }
     }
-
+    /*
     public void ComputeCoordinates()
     {
         // The root node is always positioned at the origin.
@@ -341,7 +350,7 @@ public class GraphLayout : MonoBehaviour
             ComputeCoordinatesSubtree(childTransform, child);
         }
     }
-
+    */
     public void ComputeCoordinatesEuclidean(Node parentNode)
     {
         /*
@@ -432,7 +441,9 @@ public class GraphLayout : MonoBehaviour
         }
        */
         //ComputeCoordinatesEuclideanTest(parentNode, 0.0, 0.0);
-        //ComputeCoordinatesEuclideanTest2(parentNode, HyperbolicTransformation.I4.matrix4d);
+        Matrix4d I = new Matrix4d();
+        I.setIdentity();
+        ComputeCoordinatesEuclideanTest2(parentNode, I);
     }
 
     public void ComputeCoordinatesEuclideanTest(Node parentNode, double PhiCumulative, double ThetaCumulative)
@@ -471,34 +482,42 @@ public class GraphLayout : MonoBehaviour
         }*/
     }
 
-    public void ComputeCoordinatesEuclideanTest2(Node parentNode, Matrix4x4 parentTransformation)
+    public void ComputeCoordinatesEuclideanTest2(Node parentNode, Matrix4d parentTransformation)
     {
-    /*
+    
         if (parentNode.nodeNumDecendents == 0)
         {
             return;
         }
         else
         {
+            Point4d origin = new Point4d(0, 0, 0, 1);
             foreach(Node child in parentNode.nodeChildren)
             {
-                Vector3 childCoord = Point4d.projectAndGetVect3(child.nodeRelativeHyperbolicProjectionPosition);
-                Matrix4x4 nextRotation = new Matrix4x4();
-                Quaternion q = Quaternion.Euler(- child.nodeHemspherePhi / Math.PI * 180, child.nodeHemsphereTheta / Math.PI * 180, 0.0);
-                nextRotation = Matrix4x4.Rotate(q);
-                nextRotation *= parentTransformation;
+                Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
+                parentTransformation.transform(childCoord);
+                child.nodeEuclideanPositionUnscaled = childCoord;
 
-                Quaternion rotation = Quaternion.Euler(0.0, 0.0, 0.0);
-                Matrix4x4 m = Matrix4x4.TRS(new Vector3(HyperbolicMath.euclideanDistance(parentNode.nodeHemsphereRadius) + parentNode.nodeEuclideanPosition.x, parentNode.nodeEuclideanPosition.y, parentNode.nodeEuclideanPosition.z), rotation, new Vector3(globalScaler, globalScaler, globalScaler));
+                Matrix4d nextTransform = new Matrix4d();
+                nextTransform = HyperbolicMath.getTranslationMatrix(origin, childCoord);
+
+                //Vector3 childCoord = Point4d.projectAndGetVect3(child.nodeRelativeHyperbolicProjectionPosition);
+                //Matrix4x4 nextRotation = new Matrix4x4();
+                //Quaternion q = Quaternion.Euler(- child.nodeHemspherePhi / Math.PI * 180, child.nodeHemsphereTheta / Math.PI * 180, 0.0);
+                //nextRotation = Matrix4x4.Rotate(q);
+                //nextRotation *= parentTransformation;
+
+                //Quaternion rotation = Quaternion.Euler(0.0, 0.0, 0.0);
+                //Matrix4x4 m = Matrix4x4.TRS(new Vector3(HyperbolicMath.euclideanDistance(parentNode.nodeHemsphereRadius) + parentNode.nodeEuclideanPosition.x, parentNode.nodeEuclideanPosition.y, parentNode.nodeEuclideanPosition.z), rotation, new Vector3(globalScaler, globalScaler, globalScaler));
 
                 //childCoord = parentTransformation.MultiplyPoint(childCoord);
-                childCoord = m.MultiplyPoint(childCoord);
+                //childCoord = m.MultiplyPoint(childCoord);
 
-                child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
-                ComputeCoordinatesEuclideanTest2(child, nextRotation);
+                //child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
+                ComputeCoordinatesEuclideanTest2(child, nextTransform);
             }
         }
-        */
+        
     }
 
     public void Scaling(Node parentNode)
@@ -537,7 +556,9 @@ public class GraphLayout : MonoBehaviour
         foreach (Node child in node.nodeChildren)
         {
             nodesPrimitives.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
-            //nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3(child.nodeEuclideanPosition.x, child.nodeEuclideanPosition.y, child.nodeEuclideanPosition.z);
+            nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                                                        (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                                                        (float)child.nodeEuclideanPositionUnscaled.z * globalScaler);
             nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeName;
             DrawNodesRecursive(child);
         }
@@ -556,10 +577,14 @@ public class GraphLayout : MonoBehaviour
             edgeHolders[edgeHolders.Count - 1].AddComponent<LineRenderer>();
             LineRenderer lr = edgeHolders[edgeHolders.Count - 1].GetComponent<LineRenderer>();
             lr.material = lineMaterial; //lineMaterial
-            //lr.SetColors(color, color);
-            //lr.SetWidth(lineWidth, lineWidth);
-            //lr.SetPosition(0, new Vector3(parentNode.nodeEuclideanPosition.x, parentNode.nodeEuclideanPosition.y, parentNode.nodeEuclideanPosition.z));
-            //lr.SetPosition(1, new Vector3(child.nodeEuclideanPosition.x, child.nodeEuclideanPosition.y, child.nodeEuclideanPosition.z));
+            lr.SetColors(color, color);
+            lr.SetWidth(lineWidth, lineWidth);
+            lr.SetPosition(0, new Vector3((float)parentNode.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                          (float)parentNode.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                          (float)parentNode.nodeEuclideanPositionUnscaled.z * globalScaler));
+            lr.SetPosition(1, new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                          (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                          (float)child.nodeEuclideanPositionUnscaled.z * globalScaler));
 
             DrawEdges(child);
         }
@@ -574,6 +599,7 @@ public class Node
     public string nodeName;
     public int nodeLevel;
     public Point4d nodeEuclideanPosition;
+    public Point4d nodeEuclideanPositionUnscaled;
     public Point4d nodeRelativeHyperbolicProjectionPosition;
     public double nodeAnglePhi;
     public double nodeAngleTheta;
@@ -592,6 +618,7 @@ public class Node
         this.nodeName = nodeName;
         this.nodeLevel = nodeLevel;
         this.nodeEuclideanPosition = new Point4d(0, 0, 0, 1);
+        this.nodeEuclideanPositionUnscaled = new Point4d(0, 0, 0, 1);
         this.nodeRelativeHyperbolicProjectionPosition = new Point4d(0, 0, 0, 1);
         this.nodeAnglePhi = 0.0;
         this.nodeAngleTheta = 0.0;
@@ -791,6 +818,7 @@ public class Matrix4d
         double w = this.m30 * v.x + (this.m31 * v.y) + (this.m32 * v.z) + (this.m33 * v.w);
 
         v.x = x; v.y = y; v.z = z; v.w = w;
+        v.normalizeHomoCoord();
     }
 
 
@@ -839,20 +867,116 @@ public class Matrix4d
         this.m30 = 0; this.m31 = 0; this.m32 = 0; this.m33 = 1;
     }
 
+    public void setHyperbolicIdentity()
+    {
+        this.m00 = 1; this.m01 = 0; this.m02 = 0; this.m03 = 0;
+        this.m10 = 0; this.m11 = 1; this.m12 = 0; this.m13 = 0;
+        this.m20 = 0; this.m21 = 0; this.m22 = 1; this.m23 = 0;
+        this.m30 = 0; this.m31 = 0; this.m32 = 0; this.m33 = -1;
+    }
+
     public static Matrix4d operator *(Matrix4d lhs, Matrix4d rhs)
     {
-        //return lhs.matrix4d * rhs.matrix4d; //TODO: fix matrix multiplication
-        return new Matrix4d();
+        Matrix4d temp = new Matrix4d();
+
+        temp.m00 = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10 + lhs.m02 * rhs.m20 + lhs.m03 * rhs.m30;
+        temp.m10 = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10 + lhs.m12 * rhs.m20 + lhs.m13 * rhs.m30;
+        temp.m20 = lhs.m20 * rhs.m00 + lhs.m21 * rhs.m10 + lhs.m22 * rhs.m20 + lhs.m23 * rhs.m30;
+        temp.m30 = lhs.m30 * rhs.m00 + lhs.m31 * rhs.m10 + lhs.m32 * rhs.m20 + lhs.m33 * rhs.m30;
+
+        temp.m01 = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11 + lhs.m02 * rhs.m21 + lhs.m03 * rhs.m31;
+        temp.m11 = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11 + lhs.m12 * rhs.m21 + lhs.m13 * rhs.m31;
+        temp.m21 = lhs.m20 * rhs.m01 + lhs.m21 * rhs.m11 + lhs.m22 * rhs.m21 + lhs.m23 * rhs.m31;
+        temp.m31 = lhs.m30 * rhs.m01 + lhs.m31 * rhs.m11 + lhs.m32 * rhs.m21 + lhs.m33 * rhs.m31;
+
+        temp.m02 = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02 * rhs.m22 + lhs.m03 * rhs.m32;
+        temp.m12 = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12 * rhs.m22 + lhs.m13 * rhs.m32;
+        temp.m22 = lhs.m20 * rhs.m02 + lhs.m21 * rhs.m12 + lhs.m22 * rhs.m22 + lhs.m23 * rhs.m32;
+        temp.m32 = lhs.m30 * rhs.m02 + lhs.m31 * rhs.m12 + lhs.m32 * rhs.m22 + lhs.m33 * rhs.m32;
+
+        temp.m03 = lhs.m00 * rhs.m03 + lhs.m01 * rhs.m13 + lhs.m02 * rhs.m23 + lhs.m03 * rhs.m33;
+        temp.m13 = lhs.m10 * rhs.m03 + lhs.m11 * rhs.m13 + lhs.m12 * rhs.m23 + lhs.m13 * rhs.m33;
+        temp.m23 = lhs.m20 * rhs.m03 + lhs.m21 * rhs.m13 + lhs.m22 * rhs.m23 + lhs.m23 * rhs.m33;
+        temp.m33 = lhs.m30 * rhs.m03 + lhs.m31 * rhs.m13 + lhs.m32 * rhs.m23 + lhs.m33 * rhs.m33;
+
+        return temp;
     }
 
     public static Matrix4d operator *(Matrix4d lhs, double rhs)
     {
         Matrix4d temp = new Matrix4d();
-        temp.SetRow(0, lhs.GetRow(0));
-        temp.SetRow(1, lhs.GetRow(1));
-        temp.SetRow(2, lhs.GetRow(2));
-        temp.SetRow(3, lhs.GetRow(3));
+        temp.m00 = lhs.m00 * rhs; temp.m01 = lhs.m01 * rhs; temp.m02 = lhs.m02 * rhs; temp.m03 = lhs.m03 * rhs;
+        temp.m10 = lhs.m10 * rhs; temp.m11 = lhs.m11 * rhs; temp.m12 = lhs.m12 * rhs; temp.m13 = lhs.m13 * rhs;
+        temp.m20 = lhs.m20 * rhs; temp.m21 = lhs.m21 * rhs; temp.m22 = lhs.m22 * rhs; temp.m23 = lhs.m23 * rhs;
+        temp.m30 = lhs.m30 * rhs; temp.m31 = lhs.m31 * rhs; temp.m32 = lhs.m32 * rhs; temp.m33 = lhs.m33 * rhs;
         return temp;
+    }
+
+    public static Matrix4d operator /(Matrix4d lhs, double rhs)
+    {
+        Matrix4d temp = new Matrix4d();
+        temp.m00 = lhs.m00 / rhs; temp.m01 = lhs.m01 / rhs; temp.m02 = lhs.m02 / rhs; temp.m03 = lhs.m03 / rhs;
+        temp.m10 = lhs.m10 / rhs; temp.m11 = lhs.m11 / rhs; temp.m12 = lhs.m12 / rhs; temp.m13 = lhs.m13 / rhs;
+        temp.m20 = lhs.m20 / rhs; temp.m21 = lhs.m21 / rhs; temp.m22 = lhs.m22 / rhs; temp.m23 = lhs.m23 / rhs;
+        temp.m30 = lhs.m30 / rhs; temp.m31 = lhs.m31 / rhs; temp.m32 = lhs.m32 / rhs; temp.m33 = lhs.m33 / rhs;
+        return temp;
+    }
+
+    public static Matrix4d operator -(Matrix4d lhs, Matrix4d rhs)
+    {
+        Matrix4d temp = new Matrix4d();
+        temp.m00 = lhs.m00 - rhs.m00; temp.m01 = lhs.m01 - rhs.m01; temp.m02 = lhs.m02 - rhs.m02; temp.m03 = lhs.m03 - rhs.m03;
+        temp.m10 = lhs.m10 - rhs.m10; temp.m11 = lhs.m11 - rhs.m11; temp.m12 = lhs.m12 - rhs.m12; temp.m13 = lhs.m13 - rhs.m13;
+        temp.m20 = lhs.m20 - rhs.m20; temp.m21 = lhs.m21 - rhs.m21; temp.m22 = lhs.m22 - rhs.m22; temp.m23 = lhs.m23 - rhs.m23;
+        temp.m30 = lhs.m30 - rhs.m30; temp.m31 = lhs.m31 - rhs.m31; temp.m32 = lhs.m32 - rhs.m32; temp.m33 = lhs.m33 - rhs.m33;
+        return temp;
+    }
+
+    public static Matrix4d inverse(Matrix4d matrix)
+    {
+        double A2323 = matrix.m22 * matrix.m33 - matrix.m23 * matrix.m32;
+        double A1323 = matrix.m21 * matrix.m33 - matrix.m23 * matrix.m31;
+        double A1223 = matrix.m21 * matrix.m32 - matrix.m22 * matrix.m31;
+        double A0323 = matrix.m20 * matrix.m33 - matrix.m23 * matrix.m30;
+        double A0223 = matrix.m20 * matrix.m32 - matrix.m22 * matrix.m30;
+        double A0123 = matrix.m20 * matrix.m31 - matrix.m21 * matrix.m30;
+        double A2313 = matrix.m12 * matrix.m33 - matrix.m13 * matrix.m32;
+        double A1313 = matrix.m11 * matrix.m33 - matrix.m13 * matrix.m31;
+        double A1213 = matrix.m11 * matrix.m32 - matrix.m12 * matrix.m31;
+        double A2312 = matrix.m12 * matrix.m23 - matrix.m13 * matrix.m22;
+        double A1312 = matrix.m11 * matrix.m23 - matrix.m13 * matrix.m21;
+        double A1212 = matrix.m11 * matrix.m22 - matrix.m12 * matrix.m21;
+        double A0313 = matrix.m10 * matrix.m33 - matrix.m13 * matrix.m30;
+        double A0213 = matrix.m10 * matrix.m32 - matrix.m12 * matrix.m30;
+        double A0312 = matrix.m10 * matrix.m23 - matrix.m13 * matrix.m20;
+        double A0212 = matrix.m10 * matrix.m22 - matrix.m12 * matrix.m20;
+        double A0113 = matrix.m10 * matrix.m31 - matrix.m11 * matrix.m30;
+        double A0112 = matrix.m10 * matrix.m21 - matrix.m11 * matrix.m20;
+
+        double deter = matrix.m00 * (matrix.m11 * A2323 - matrix.m12 * A1323 + matrix.m13 * A1223)
+            - matrix.m01 * (matrix.m10 * A2323 - matrix.m12 * A0323 + matrix.m13 * A0223)
+            + matrix.m02 * (matrix.m10 * A1323 - matrix.m11 * A0323 + matrix.m13 * A0123)
+            - matrix.m03 * (matrix.m10 * A1223 - matrix.m11 * A0223 + matrix.m12 * A0123);
+        deter = 1 / deter;
+
+        return new Matrix4d(
+           deter * (matrix.m11 * A2323 - matrix.m12 * A1323 + matrix.m13 * A1223),
+           deter * -(matrix.m01 * A2323 - matrix.m02 * A1323 + matrix.m03 * A1223),
+           deter * (matrix.m01 * A2313 - matrix.m02 * A1313 + matrix.m03 * A1213),
+           deter * -(matrix.m01 * A2312 - matrix.m02 * A1312 + matrix.m03 * A1212),
+           deter * -(matrix.m10 * A2323 - matrix.m12 * A0323 + matrix.m13 * A0223),
+           deter * (matrix.m00 * A2323 - matrix.m02 * A0323 + matrix.m03 * A0223),
+           deter * -(matrix.m00 * A2313 - matrix.m02 * A0313 + matrix.m03 * A0213),
+           deter * (matrix.m00 * A2312 - matrix.m02 * A0312 + matrix.m03 * A0212),
+           deter * (matrix.m10 * A1323 - matrix.m11 * A0323 + matrix.m13 * A0123),
+           deter * -(matrix.m00 * A1323 - matrix.m01 * A0323 + matrix.m03 * A0123),
+           deter * (matrix.m00 * A1313 - matrix.m01 * A0313 + matrix.m03 * A0113),
+           deter * -(matrix.m00 * A1312 - matrix.m01 * A0312 + matrix.m03 * A0112),
+           deter * -(matrix.m10 * A1223 - matrix.m11 * A0223 + matrix.m12 * A0123),
+           deter * (matrix.m00 * A1223 - matrix.m01 * A0223 + matrix.m02 * A0123),
+           deter * -(matrix.m00 * A1213 - matrix.m01 * A0213 + matrix.m02 * A0113),
+           deter * (matrix.m00 * A1212 - matrix.m01 * A0212 + matrix.m02 * A0112)
+        );
     }
 
     public static implicit operator Matrix4d(Matrix4x4 m4x4)
@@ -901,7 +1025,7 @@ public class Point4d
         this.x = tx; this.y = ty; this.z = tz; this.w = tw;
     }
 
-    public void project()
+    public void normalizeHomoCoord()
     {
         double tx = this.x / (this.w);
         double ty = this.y / (this.w);
@@ -991,6 +1115,75 @@ public class Point4d
     {
         return new Point4d(lhs.x - rhs.x, lhs.y - rhs.y, lhs.z - rhs.z);
     }
+
+    public static double operator *(Point4d lhs, Point4d rhs)
+    {
+        return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+    }
+
+    public static Point4d operator *(Point4d lhs, double constant)
+    {
+        return new Point4d(lhs.x * constant, lhs.y * constant, lhs.z * constant, lhs.w * constant);
+    }
+
+    public static Point4d operator *(double constant, Point4d rhs)
+    {
+        return new Point4d(rhs.x * constant, rhs.y * constant, rhs.z * constant, rhs.w * constant);
+    }
+
+    public static Point4d operator +(Point4d lhs, Point4d rhs)
+    {
+        return new Point4d(lhs.x + rhs.x, lhs.y + rhs.y, lhs.z + rhs.z, lhs.w + rhs.w);
+    }
+
+    //The coordinates should be normalized before using these affine coordinates function, because these function ignore w part of point4d
+    public static Point4d subAffineCoord(Point4d point1, Point4d point2)
+    {
+        return new Point4d(point1.x - point2.x, point1.y - point2.y, point1.z - point2.z, 1);
+    }
+
+    public static double dotAffineCoord(Point4d point1, Point4d point2)
+    {
+        return point1.x * point2.x + point1.y * point2.y + point1.z * point2.z;
+    }
+
+    public static double getAffineVectorLength(Point4d point1)
+    {
+        return Math.Sqrt(point1.x * point1.x + point1.y * point1.y + point1.z * point1.z);
+    }
+
+    public static Point4d makeAffineUnitVector(Point4d point1)
+    {
+        double length = getAffineVectorLength(point1);
+        return new Point4d(point1.x / length, point1.y / length, point1.z / length, 1);
+    }
+
+    public static Matrix4d multPointWithItsTranspose(Point4d point)
+    {
+        Matrix4d resultMat = new Matrix4d();
+
+        resultMat.m00 = point.x * point.x;
+        resultMat.m01 = point.y * point.x;
+        resultMat.m02 = point.z * point.x;
+        resultMat.m03 = point.w * point.x;
+
+        resultMat.m10 = point.x * point.y;
+        resultMat.m11 = point.y * point.y;
+        resultMat.m12 = point.z * point.y;
+        resultMat.m13 = point.w * point.y;
+
+        resultMat.m20 = point.x * point.z;
+        resultMat.m21 = point.y * point.z;
+        resultMat.m22 = point.z * point.z;
+        resultMat.m23 = point.w * point.z;
+
+        resultMat.m30 = point.x * point.w;
+        resultMat.m31 = point.y * point.w;
+        resultMat.m32 = point.z * point.w;
+        resultMat.m33 = point.w * point.w;
+
+        return resultMat;
+    }
     /*
     public static Vector3 projectAndGetVect3FromHypToEuc(Point4d p)
     {
@@ -1072,21 +1265,100 @@ class HyperbolicMath
 
     public static double MinkowskiInnerProduct(Point4d x, Point4d y)
     {
-        return (x.x * y.x + x.y * y.y + x.z * y.z - x.w * y.w);
+        //double product;
+        Matrix4d I31 = new Matrix4d();
+        I31.setHyperbolicIdentity();
+        x.normalizeHomoCoord();
+        y.normalizeHomoCoord();
+        Point4d tempVect = new Point4d(x.x, x.y, x.z, -x.w);
+        return tempVect * y;
+    }
+
+    public static Matrix4d getReflectionMatrix(Point4d point)
+    {
+        Matrix4d identity = new Matrix4d();
+        Matrix4d hyperIdentity = new Matrix4d();
+        identity.setIdentity();
+        hyperIdentity.setHyperbolicIdentity();
+        point.normalizeHomoCoord();
+
+        Matrix4d reflectionMat = new Matrix4d();
+        reflectionMat = Point4d.multPointWithItsTranspose(point);
+        reflectionMat *= 2;
+        reflectionMat *= hyperIdentity;
+        reflectionMat /= MinkowskiInnerProduct(point, point);
+        reflectionMat = identity - reflectionMat;
+
+        return reflectionMat;
+    }
+
+    public static Matrix4d getTranslationMatrix(Point4d point1, Point4d point2)
+    {
+        Point4d midpoint = getMidpoint(point1, point2);
+        Matrix4d result = getReflectionMatrix(midpoint);
+        result *= getReflectionMatrix(point1);
+        return result;
+    }
+
+    public static Point4d getMidpoint(Point4d point1, Point4d point2)
+    {
+        point1.normalizeHomoCoord();
+        point2.normalizeHomoCoord();
+        double coefficientA = Math.Sqrt(MinkowskiInnerProduct(point2, point2) * MinkowskiInnerProduct(point1, point2));
+        double coefficientB = Math.Sqrt(MinkowskiInnerProduct(point1, point1) * MinkowskiInnerProduct(point1, point2));
+
+        Point4d midpoint = new Point4d();
+        midpoint = point1 * coefficientA;
+        midpoint += (point2 * coefficientB);
+        return midpoint;
+    }
+
+    public static Matrix4d getRotationMatrix(Point4d point1, Point4d point2, double angle)
+    {
+        point1.normalizeHomoCoord();
+        point2.normalizeHomoCoord();
+
+        Point4d origin = new Point4d(0, 0, 0, 1);
+        Point4d closestPoint = getClosestPoint(point1, point2);
+        Matrix4d euclideanRotationMatrix = getEuclideanRotationMatrix(point1, point2, angle);
+        Matrix4d translationMatrix = getTranslationMatrix(closestPoint, origin);
+        Matrix4d inverseTranslationMatrix = Matrix4d.inverse(translationMatrix);
+        Matrix4d rotationMatrix = inverseTranslationMatrix * euclideanRotationMatrix * translationMatrix;
+        return rotationMatrix;
+    }
+
+    public static Point4d getClosestPoint(Point4d a, Point4d b)
+    {
+        Point4d aSubB = a - b;
+        Point4d bSubA = b - a;
+        double coefficientA = (Point4d.dotAffineCoord(a, aSubB) / Point4d.dotAffineCoord(aSubB, aSubB));
+        double coefficientB = (Point4d.dotAffineCoord(b, bSubA) / Point4d.dotAffineCoord(bSubA, bSubA));
+        Point4d closestPoint = coefficientA * b + coefficientB * a;
+        return closestPoint;
+    }
+
+    public static Matrix4d getEuclideanRotationMatrix(Point4d point1, Point4d point2, double angle)
+    {
+        Point4d orientation = Point4d.subAffineCoord(point1, point2);
+        orientation = Point4d.makeAffineUnitVector(orientation);
+        double u1 = orientation.x;
+        double u2 = orientation.y;
+        double u3 = orientation.z;
+        double c = Math.Cos(angle);
+        double s = Math.Sin(angle);
+        double c1 = 1 - c;
+
+        return new Matrix4d(u1 * u1 + c * (1 - u1 * u1), u1 * u2 * c1 - u3 * s, u1 * u3 * c1 + u2 * s, 0,
+                            u1 * u2 * c1 + u3 * s, u2 * u2 + c * (1 - u2 * u2), u2 * u3 * c1 - u1 * s, 0,
+                            u1 * u3 * c1 - u2 * s, u2 * u3 * c1 + u1 * s, u3 * u3 + c * (1 - u3 * u3), 0,
+                            0, 0, 0, 1);
+
     }
 
     public static double euclideanDistance(double x)
     {
         double y = (double)(Math.Cosh(x / 2.0));
         return Math.Sqrt(1.0 - 1.0 / (y * y));
-    }
-
-    public static Point4d GetMidpoint(Point4d pointA, Point4d pointB)
-    {
-        double coefficientA = Math.Sqrt(MinkowskiInnerProduct(pointB, pointB) * MinkowskiInnerProduct(pointA, pointB));
-        double coefficientB = Math.Sqrt(MinkowskiInnerProduct(pointA, pointA) * MinkowskiInnerProduct(pointA, pointB));
-
-        return new Point4d(pointA.x * coefficientA + pointB.x * coefficientB, pointA.y * coefficientA + pointB.y * coefficientB, pointA.z * coefficientA + pointB.z * coefficientB, pointA.w * coefficientA + pointB.w * coefficientB);
     }
 
     public static double dotProduct(Vector3 x, Vector3 y)
