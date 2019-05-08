@@ -42,13 +42,27 @@ public class GraphLayout : MonoBehaviour
         nodeNameToIdDict = new Dictionary<string, int>();
         //globalScaler = 1000.0;
 
-        Point4d a = new Point4d(0.2, 0, 0, 1);
+        //Point4d a = new Point4d(0.2, 0, 0, 1);
+        Point4d a = new Point4d(0, 0, 0, 1);
         Point4d b = new Point4d(-0.5, -0.5, 0, 1);
         Point4d bp = new Point4d(0.3, -0.7, 0, 1);
         Matrix4d translationMat = new Matrix4d();
         translationMat = HyperbolicMath.getTranslationMatrix(b, bp);
         Point4d at = new Point4d(0.2, 0, 0, 1);
         translationMat.transform(at);
+
+        Point4d coord = new Point4d(0, 0, 0, 1);
+        Point4d origin = new Point4d(0, 0, 0, 1);
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(origin, new Point4d(0.5, 0, 0, 1));
+        Matrix4d rotationMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 1, 0, 1), Math.PI / 3);
+        rotationMat *= HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 0, 1, 1), Math.PI / 6);
+        transformMat.transform(coord);
+        rotationMat.transform(coord);
+        //GameObject testOb = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        //testOb.transform.position = new Vector3((float)coord.x,
+        //                                        (float)coord.y,
+        //                                        (float)coord.z);
+
 
         //Read in data
         ReadInGraphData();
@@ -494,6 +508,18 @@ public class GraphLayout : MonoBehaviour
             Point4d origin = new Point4d(0, 0, 0, 1);
             foreach(Node child in parentNode.nodeChildren)
             {
+                /*
+                Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(origin, new Point4d(parentNode.nodeHemsphereRadius, 0, 0, 1));
+
+                transformMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0.5, 0, 0, 1), child.nodeHemsphereTheta) * transformMat;
+                transformMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 0, 0.5, 1), child.nodeHemspherePhi) * transformMat;
+
+                transformMat = transformMat * parentTransformation;
+                transformMat.transform(child.nodeEuclideanPositionUnscaled);
+
+                ComputeCoordinatesEuclideanTest2(child, transformMat);
+                */
+
                 Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
                 parentTransformation.transform(childCoord);
                 child.nodeEuclideanPositionUnscaled = childCoord;
@@ -518,6 +544,44 @@ public class GraphLayout : MonoBehaviour
             }
         }
         
+    }
+
+    public void ComputeCoordinatesEuclideanTest2_TranslationOnly(Node parentNode, Matrix4d parentTransformation)
+    {
+
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+        else
+        {
+            Point4d origin = new Point4d(0, 0, 0, 1);
+            foreach (Node child in parentNode.nodeChildren)
+            {
+                Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
+                parentTransformation.transform(childCoord);
+                child.nodeEuclideanPositionUnscaled = childCoord;
+
+                Matrix4d nextTransform = new Matrix4d();
+                nextTransform = HyperbolicMath.getTranslationMatrix(origin, childCoord);
+
+                //Vector3 childCoord = Point4d.projectAndGetVect3(child.nodeRelativeHyperbolicProjectionPosition);
+                //Matrix4x4 nextRotation = new Matrix4x4();
+                //Quaternion q = Quaternion.Euler(- child.nodeHemspherePhi / Math.PI * 180, child.nodeHemsphereTheta / Math.PI * 180, 0.0);
+                //nextRotation = Matrix4x4.Rotate(q);
+                //nextRotation *= parentTransformation;
+
+                //Quaternion rotation = Quaternion.Euler(0.0, 0.0, 0.0);
+                //Matrix4x4 m = Matrix4x4.TRS(new Vector3(HyperbolicMath.euclideanDistance(parentNode.nodeHemsphereRadius) + parentNode.nodeEuclideanPosition.x, parentNode.nodeEuclideanPosition.y, parentNode.nodeEuclideanPosition.z), rotation, new Vector3(globalScaler, globalScaler, globalScaler));
+
+                //childCoord = parentTransformation.MultiplyPoint(childCoord);
+                //childCoord = m.MultiplyPoint(childCoord);
+
+                //child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
+                ComputeCoordinatesEuclideanTest2(child, nextTransform);
+            }
+        }
+
     }
 
     public void Scaling(Node parentNode)
@@ -559,7 +623,9 @@ public class GraphLayout : MonoBehaviour
             nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
                                                                                         (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
                                                                                         (float)child.nodeEuclideanPositionUnscaled.z * globalScaler);
-            nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeName;
+            nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeId.ToString();
+            //nodesPrimitives[nodesPrimitives.Count - 1].AddComponent<>();
+            //nodesPrimitives[nodesPrimitives.Count - 1].tag = child.nodeId.ToString();
             DrawNodesRecursive(child);
         }
     }
@@ -590,6 +656,43 @@ public class GraphLayout : MonoBehaviour
         }
     }
 
+    public void updateTranslation(String id)
+    {
+        int NodeId = Int32.Parse(id);
+        Node selectedNode = graphNodesList[NodeId];
+        //Node selectedNode = node;
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), selectedNode.nodeEuclideanPositionUnscaled);
+        transformMat.transform(graphRoot.nodeEuclideanPositionUnscaled);
+        translateAllPointByMatrix(graphRoot, transformMat);
+        DrawNodes();
+        DrawEdges(graphRoot);
+    }
+
+    public void translateAllPointByMatrix(Node parentNode, Matrix4d transformMat)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+
+        foreach (Node child in parentNode.nodeChildren)
+        {
+            transformMat.transform(child.nodeEuclideanPositionUnscaled);
+            translateAllPointByMatrix(child, transformMat);
+        }
+    }
+
+    public void destroyAll()
+    {
+        foreach(GameObject gameObject in nodesPrimitives) {
+            Destroy(gameObject);
+        }
+
+        foreach(GameObject gameObject in edgeHolders)
+        {
+            Destroy(gameObject);
+        }
+    }
 }
 
 
@@ -653,11 +756,24 @@ public class Node
 
     public void CalculateAndSetNodeRelativeHyperbolicProjectionPosition(double radius)
     {
+        /*
         double x = radius * Math.Sin(this.nodeHemspherePhi) * Math.Cos(this.nodeHemsphereTheta);
         double y = radius * Math.Sin(this.nodeHemspherePhi) * Math.Sin(this.nodeHemsphereTheta);
         double z = radius * Math.Cos(this.nodeHemspherePhi);
 
         this.SetNodeRelativeHyperbolicProjectionPosition(x, y, z, 1);
+        */
+        
+        Point4d coord = new Point4d(0, 0, 0, 1);
+        Point4d origin = new Point4d(0, 0, 0, 1);
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(origin, new Point4d(radius, 0, 0, 1));
+        Matrix4d rotationMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0.5, 0, 0, 1), this.nodeHemsphereTheta);
+        rotationMat *= HyperbolicMath.getRotationMatrix(coord, new Point4d(0, 0, 0.5, 1), this.nodeHemspherePhi);
+        transformMat.transform(coord);
+        rotationMat.transform(coord);
+        coord.normalizeHomoCoord();
+        this.SetNodeRelativeHyperbolicProjectionPosition(coord.x, coord.y, coord.z, coord.w);
+        
     }
 
     public void SetHemspheres(double Phi, double Theta)
