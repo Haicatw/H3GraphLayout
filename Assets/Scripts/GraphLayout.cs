@@ -18,6 +18,12 @@ public class GraphLayout : MonoBehaviour
     public float globalScaler;
     public float lineWidth;
     public float randeringRadius;
+    // Movement speed in units/sec.
+    public float speed = 1.0f;
+    // Time when the movement started.
+    private float startTime;
+    // Total distance between the markers.
+    private float journeyLength;
     private List<Node> graphNodesList;
     private List<GameObject> nodesPrimitives;
     private List<GameObject> edgeHolders;
@@ -521,11 +527,24 @@ public class GraphLayout : MonoBehaviour
                 */
 
                 Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
+                Point4d parentCoord = child.nodeParent.nodeRelativeHyperbolicProjectionPosition;
+                Matrix4d parentTranslation = new Matrix4d();
+                parentTranslation = HyperbolicMath.getTranslationMatrix(origin, parentCoord);
+
                 parentTransformation.transform(childCoord);
+                parentTranslation.transform(childCoord);
                 child.nodeEuclideanPositionUnscaled = childCoord;
 
+                Matrix4d rotationMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0.5, 0, 0, 1), child.nodeHemsphereTheta);
+                rotationMat *= HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 0, 0.5, 1), child.nodeHemspherePhi);
                 Matrix4d nextTransform = new Matrix4d();
-                nextTransform = HyperbolicMath.getTranslationMatrix(origin, childCoord);
+                nextTransform = parentTransformation * rotationMat;
+                //Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
+                //parentTransformation.transform(childCoord);
+                //child.nodeEuclideanPositionUnscaled = childCoord;
+
+                //Matrix4d nextTransform = new Matrix4d();
+                //nextTransform = HyperbolicMath.getTranslationMatrix(origin, childCoord);
 
                 //Vector3 childCoord = Point4d.projectAndGetVect3(child.nodeRelativeHyperbolicProjectionPosition);
                 //Matrix4x4 nextRotation = new Matrix4x4();
@@ -579,6 +598,16 @@ public class GraphLayout : MonoBehaviour
 
                 //child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
                 ComputeCoordinatesEuclideanTest2(child, nextTransform);
+
+                /*
+                 * Point4d childCoord = child.nodeRelativeHyperbolicProjectionPosition;
+                Point4d parentCoord = child.nodeParent.nodeRelativeHyperbolicProjectionPosition;
+                Matrix4d parentTranslation = new Matrix4d();
+                parentTranslation = HyperbolicMath.getTranslationMatrix(origin, parentCoord);
+                parentTranslation.transform(childCoord);
+                parentTransformation.transform(childCoord);
+                child.nodeEuclideanPositionUnscaled = childCoord;
+                */
             }
         }
 
@@ -605,9 +634,9 @@ public class GraphLayout : MonoBehaviour
             }
         }
         */
-    }
+            }
 
-    public void DrawNodes()
+            public void DrawNodes()
     {
         nodesPrimitives.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
         //nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3(graphRoot.nodeEuclideanPosition.x, graphRoot.nodeEuclideanPosition.y, graphRoot.nodeEuclideanPosition.z);
@@ -661,7 +690,11 @@ public class GraphLayout : MonoBehaviour
         int NodeId = Int32.Parse(id);
         Node selectedNode = graphNodesList[NodeId];
         //Node selectedNode = node;
-        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), selectedNode.nodeEuclideanPositionUnscaled);
+        Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPositionUnscaled.x,
+                                                -selectedNode.nodeEuclideanPositionUnscaled.y,
+                                                -selectedNode.nodeEuclideanPositionUnscaled.z,
+                                                selectedNode.nodeEuclideanPositionUnscaled.w);
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
         transformMat.transform(graphRoot.nodeEuclideanPositionUnscaled);
         translateAllPointByMatrix(graphRoot, transformMat);
         DrawNodes();
@@ -682,13 +715,31 @@ public class GraphLayout : MonoBehaviour
         }
     }
 
+    public void updateNodeObjectPosition()
+    {
+        //https://docs.unity3d.com/ScriptReference/Vector3.Lerp.html
+        startTime = Time.time;
+        //journeyLength = Vector3.Distance(startMarker.position, endMarker.position);
+        //TODO: implementing this function
+    }
+
     public void destroyAll()
     {
-        foreach(GameObject gameObject in nodesPrimitives) {
+        destroyNodes();
+        destroyEdges();
+    }
+
+    public void destroyNodes()
+    {
+        foreach (GameObject gameObject in nodesPrimitives)
+        {
             Destroy(gameObject);
         }
+    }
 
-        foreach(GameObject gameObject in edgeHolders)
+    public void destroyEdges()
+    {
+        foreach (GameObject gameObject in edgeHolders)
         {
             Destroy(gameObject);
         }
@@ -768,7 +819,7 @@ public class Node
         Point4d origin = new Point4d(0, 0, 0, 1);
         Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(origin, new Point4d(radius, 0, 0, 1));
         Matrix4d rotationMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0.5, 0, 0, 1), this.nodeHemsphereTheta);
-        rotationMat *= HyperbolicMath.getRotationMatrix(coord, new Point4d(0, 0, 0.5, 1), this.nodeHemspherePhi);
+        rotationMat *= HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 0, 0.5, 1), this.nodeHemspherePhi);
         transformMat.transform(coord);
         rotationMat.transform(coord);
         coord.normalizeHomoCoord();
@@ -1373,6 +1424,12 @@ public class Point4d
         this.x /= length;
         this.y /= length;
         this.z /= length;
+    }
+
+    public Vector3 GetVector3()
+    {
+        this.normalizeHomoCoord();
+        return new Vector3((float)this.x, (float)this.y, (float)this.z);
     }
 }
 

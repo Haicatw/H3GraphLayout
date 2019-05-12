@@ -34,7 +34,7 @@ public class CamLook : MonoBehaviour
 
     void mouseSelect()
     {
-        if (Input.GetMouseButton(0))
+        if (Input.GetMouseButtonDown(0))
         {
             RaycastHit hit;
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
