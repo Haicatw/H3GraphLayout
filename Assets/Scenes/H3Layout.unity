@@ -157,12 +157,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   networkFolder: Data
   networkName: processedPower.json
-  leafRadius: 0.02
-  color: {r: 0.1462264, g: 0.37742025, b: 1, a: 1}
+  leafRadius: 0.01
+  color: {r: 0, g: 0, b: 0, a: 0}
   lineMaterial: {fileID: 2100000, guid: 0de6a2d823d9ffd46aecc5d085fe6097, type: 2}
-  globalScaler: 500
-  lineWidth: 0.2
-  randeringRadius: 0
+  globalScaler: 100
+  lineWidth: 0.05
+  randeringRadius: 1
   speed: 1
 --- !u!1 &170076733
 GameObject:

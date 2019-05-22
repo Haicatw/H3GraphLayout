@@ -200,14 +200,15 @@ public class GraphLayout : MonoBehaviour
                 //Hyperbolic Space Case:
                 //H3Math.TWO_PI * (H3Math.cosh(r / K) - 1.0);
                 //parentHemsphereArea += (double)(Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius / 2) - 1));
-                parentHemsphereArea += (double)(Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius) - 1));
+                //parentHemsphereArea += Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius) - 1);
+                parentHemsphereArea += Math.PI * 2 * Math.Pow(child.nodeHemsphereRadius, 2);
             }
             //Euclidean Space Case:
             //parentNode.nodeHemsphereRadius = Math.Sqrt(parentHemsphereArea);
             //Hyperbolic Space Case:
             //K * H3Math.asinh(Math.sqrt(area / (H3Math.TWO_PI * K * K)));
             //parentNode.nodeHemsphereRadius = (double)HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea / (Math.PI * 2 * 4))) * 2;
-            parentNode.nodeHemsphereRadius = (double)HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea / (Math.PI * 2)));
+            parentNode.nodeHemsphereRadius = HyperbolicMath.ASinh(Math.Sqrt(parentHemsphereArea / (Math.PI * 2)));
         }
         
         return;
@@ -636,10 +637,12 @@ public class GraphLayout : MonoBehaviour
         */
             }
 
-            public void DrawNodes()
+    public void DrawNodes()
     {
         nodesPrimitives.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
-        //nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3(graphRoot.nodeEuclideanPosition.x, graphRoot.nodeEuclideanPosition.y, graphRoot.nodeEuclideanPosition.z);
+        nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)graphRoot.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                                                    (float)graphRoot.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                                                    (float)graphRoot.nodeEuclideanPositionUnscaled.z * globalScaler);
         nodesPrimitives[nodesPrimitives.Count - 1].name = graphRoot.nodeName;
         DrawNodesRecursive(graphRoot);
     }
@@ -697,6 +700,7 @@ public class GraphLayout : MonoBehaviour
         Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
         transformMat.transform(graphRoot.nodeEuclideanPositionUnscaled);
         translateAllPointByMatrix(graphRoot, transformMat);
+        destroyAll();
         DrawNodes();
         DrawEdges(graphRoot);
     }
