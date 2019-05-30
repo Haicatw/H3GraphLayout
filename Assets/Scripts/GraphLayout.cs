@@ -18,18 +18,20 @@ public class GraphLayout : MonoBehaviour
     public float globalScaler;
     public float lineWidth;
     public float randeringRadius;
-    // Movement speed in units/sec.
-    public float speed = 1.0f;
-    // Time when the movement started.
-    private float startTime;
-    // Total distance between the markers.
-    private float journeyLength;
+    public GameObject nodePrefab;
+    public GameObject edgePrefab;
+    public float lerpTime;
+    
     private List<Node> graphNodesList;
     private List<GameObject> nodesPrimitives;
     private List<GameObject> edgeHolders;
     private readonly double EPSILON = Mathf.Epsilon;
     private Graph graphContainer;
     private Dictionary<String, int> nodeNameToIdDict;
+    private List<Vector3> lerpStartMarkers;
+    private List<Vector3> lerpEndMarkers;
+    private float lerpStartTime;
+    
     //private double globalScaler;
     
 
@@ -560,6 +562,7 @@ public class GraphLayout : MonoBehaviour
                 //childCoord = m.MultiplyPoint(childCoord);
 
                 //child.nodeEuclideanPosition = new Point4d(childCoord.x, childCoord.y, childCoord.z);
+
                 ComputeCoordinatesEuclideanTest2(child, nextTransform);
             }
         }
@@ -639,10 +642,11 @@ public class GraphLayout : MonoBehaviour
 
     public void DrawNodes()
     {
-        nodesPrimitives.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+        nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
         nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)graphRoot.nodeEuclideanPositionUnscaled.x * globalScaler,
                                                                                     (float)graphRoot.nodeEuclideanPositionUnscaled.y * globalScaler,
                                                                                     (float)graphRoot.nodeEuclideanPositionUnscaled.z * globalScaler);
+        //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
         nodesPrimitives[nodesPrimitives.Count - 1].name = graphRoot.nodeName;
         DrawNodesRecursive(graphRoot);
     }
@@ -651,11 +655,14 @@ public class GraphLayout : MonoBehaviour
     {
         foreach (Node child in node.nodeChildren)
         {
-            nodesPrimitives.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+            nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
             nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
                                                                                         (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
                                                                                         (float)child.nodeEuclideanPositionUnscaled.z * globalScaler);
+            //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
             nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeId.ToString();
+            graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
+            nodeScript.setId(child.nodeId);
             //nodesPrimitives[nodesPrimitives.Count - 1].AddComponent<>();
             //nodesPrimitives[nodesPrimitives.Count - 1].tag = child.nodeId.ToString();
             DrawNodesRecursive(child);
@@ -688,9 +695,11 @@ public class GraphLayout : MonoBehaviour
         }
     }
 
-    public void updateTranslation(String id)
+    public void updateTranslation(int id)
     {
-        int NodeId = Int32.Parse(id);
+        /*
+        //Debug.Log(id);
+        int NodeId = 67;//Int32.Parse(id); //TODO:fix deprecated function here.
         Node selectedNode = graphNodesList[NodeId];
         //Node selectedNode = node;
         Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPositionUnscaled.x,
@@ -703,6 +712,62 @@ public class GraphLayout : MonoBehaviour
         destroyAll();
         DrawNodes();
         DrawEdges(graphRoot);
+        */
+        int NodeId = id;//Int32.Parse(id); //TODO:fix deprecated function here.
+        Node selectedNode = graphNodesList[NodeId];
+        //Node selectedNode = node;
+
+        lerpStartMarkers.Clear();
+        updateStartMarker(graphRoot);
+
+        Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPositionUnscaled.x,
+                                                -selectedNode.nodeEuclideanPositionUnscaled.y,
+                                                -selectedNode.nodeEuclideanPositionUnscaled.z,
+                                                selectedNode.nodeEuclideanPositionUnscaled.w);
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
+        transformMat.transform(graphRoot.nodeEuclideanPositionUnscaled);
+        translateAllPointByMatrix(graphRoot, transformMat);
+
+        lerpEndMarkers.Clear();
+        updateEndMarker(graphRoot);
+        updateNodeObjectPosition();
+    }
+
+    public Vector3 lerp(float lerpStartTime, Vector3 startMarker, Vector3 endMarker)
+    {
+        float timeSinceStart = Time.time - lerpStartTime;
+        float progressPercentage = timeSinceStart / lerpTime;
+        return Vector3.Lerp(startMarker, endMarker, progressPercentage);
+    }
+
+    public void updateStartMarker(Node parentNode)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+
+        foreach (Node child in parentNode.nodeChildren)
+        {
+            lerpStartMarkers.Add(new Vector3((float)child.nodeEuclideanPositionUnscaled.x,
+                                                 (float)child.nodeEuclideanPositionUnscaled.y,
+                                                 (float)child.nodeEuclideanPositionUnscaled.z));
+        }
+    }
+
+    public void updateEndMarker(Node parentNode)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+
+        foreach (Node child in parentNode.nodeChildren)
+        {
+            lerpEndMarkers.Add(new Vector3((float)child.nodeEuclideanPositionUnscaled.x,
+                                                 (float)child.nodeEuclideanPositionUnscaled.y,
+                                                 (float)child.nodeEuclideanPositionUnscaled.z));
+        }
     }
 
     public void translateAllPointByMatrix(Node parentNode, Matrix4d transformMat)
@@ -721,10 +786,12 @@ public class GraphLayout : MonoBehaviour
 
     public void updateNodeObjectPosition()
     {
-        //https://docs.unity3d.com/ScriptReference/Vector3.Lerp.html
-        startTime = Time.time;
-        //journeyLength = Vector3.Distance(startMarker.position, endMarker.position);
-        //TODO: implementing this function
+        lerpStartTime = Time.time;
+
+        for(int i = 0; i < nodesPrimitives.Count; i++)
+        {
+            nodesPrimitives[i].transform.position = lerp(lerpStartTime, lerpStartMarkers[i], lerpEndMarkers[i]);
+        }
     }
 
     public void destroyAll()

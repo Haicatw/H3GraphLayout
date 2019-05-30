@@ -40,10 +40,13 @@ public class CamLook : MonoBehaviour
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out hit, 100.0f))
             {
-                Debug.Log("Select: " + hit.transform.gameObject.name);
+                GameObject gameObjectHit = hit.transform.gameObject;
+                graphNode nodeScript = gameObjectHit.GetComponent<graphNode>();
+                int id = nodeScript.getId();
+                Debug.Log("Select: Node " + id);
                 GameObject graph = GameObject.FindGameObjectWithTag("GlobalManager");
                 GraphLayout graphScript = graph.GetComponent<GraphLayout>();
-                graphScript.updateTranslation(hit.transform.gameObject.name);
+                graphScript.updateTranslation(id);
             }
         }
     }
