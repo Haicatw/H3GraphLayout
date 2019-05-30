@@ -149,7 +149,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1281942293}
-  - {fileID: 534669905}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -175,8 +174,9 @@ MonoBehaviour:
   randeringRadius: 1
   nodePrefab: {fileID: 7635653176916618192, guid: 362c68fa5b687584f89f6cd1fd190aab,
     type: 3}
-  edgePrefab: {fileID: 0}
-  lerpTime: 1
+  edgePrefab: {fileID: 6656735984258731039, guid: 8f75bce7f1fdd9d40895ca24430537b5,
+    type: 3}
+  lerpTime: 5
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +250,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.35214e-40, y: 1.05e-43, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: 1.5309205e-28, y: NaN, z: NaN, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -350,8 +350,8 @@ Transform:
   m_LocalPosition: {x: -5, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 62817809}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!114 &534669906
 MonoBehaviour:

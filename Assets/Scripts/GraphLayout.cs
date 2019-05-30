@@ -48,6 +48,8 @@ public class GraphLayout : MonoBehaviour
         nodesPrimitives = new List<GameObject>();
         edgeHolders = new List<GameObject>();
         nodeNameToIdDict = new Dictionary<string, int>();
+        lerpStartMarkers = new List<Vector3>();
+        lerpEndMarkers = new List<Vector3>();
         //globalScaler = 1000.0;
 
         //Point4d a = new Point4d(0.2, 0, 0, 1);
@@ -647,6 +649,9 @@ public class GraphLayout : MonoBehaviour
                                                                                     (float)graphRoot.nodeEuclideanPositionUnscaled.y * globalScaler,
                                                                                     (float)graphRoot.nodeEuclideanPositionUnscaled.z * globalScaler);
         //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
+        graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
+        nodeScript.setId(graphRoot.nodeId);
+        nodeScript.setLerpTime(lerpTime);
         nodesPrimitives[nodesPrimitives.Count - 1].name = graphRoot.nodeName;
         DrawNodesRecursive(graphRoot);
     }
@@ -663,6 +668,7 @@ public class GraphLayout : MonoBehaviour
             nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeId.ToString();
             graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
             nodeScript.setId(child.nodeId);
+            nodeScript.setLerpTime(lerpTime);
             //nodesPrimitives[nodesPrimitives.Count - 1].AddComponent<>();
             //nodesPrimitives[nodesPrimitives.Count - 1].tag = child.nodeId.ToString();
             DrawNodesRecursive(child);
@@ -678,19 +684,18 @@ public class GraphLayout : MonoBehaviour
 
         foreach(Node child in parentNode.nodeChildren)
         {
-            edgeHolders.Add(new GameObject());
-            edgeHolders[edgeHolders.Count - 1].AddComponent<LineRenderer>();
-            LineRenderer lr = edgeHolders[edgeHolders.Count - 1].GetComponent<LineRenderer>();
-            lr.material = lineMaterial; //lineMaterial
-            lr.SetColors(color, color);
-            lr.SetWidth(lineWidth, lineWidth);
-            lr.SetPosition(0, new Vector3((float)parentNode.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                          (float)parentNode.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                          (float)parentNode.nodeEuclideanPositionUnscaled.z * globalScaler));
-            lr.SetPosition(1, new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                          (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                          (float)child.nodeEuclideanPositionUnscaled.z * globalScaler));
-
+            edgeHolders.Add((GameObject)Instantiate(edgePrefab));
+            graphEdge edgeScript = edgeHolders[edgeHolders.Count - 1].GetComponent<graphEdge>();
+            edgeScript.setMaterial(lineMaterial, color);
+            edgeScript.setLineWidth(lineWidth);
+            edgeScript.setParentId(parentNode.nodeId);
+            edgeScript.setChildId(child.nodeId);
+            edgeScript.setStartEndPosition(new Vector3((float)parentNode.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                      (float)parentNode.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                      (float)parentNode.nodeEuclideanPositionUnscaled.z * globalScaler),
+                                           new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                      (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                      (float)child.nodeEuclideanPositionUnscaled.z * globalScaler));
             DrawEdges(child);
         }
     }
@@ -713,12 +718,12 @@ public class GraphLayout : MonoBehaviour
         DrawNodes();
         DrawEdges(graphRoot);
         */
-        int NodeId = id;//Int32.Parse(id); //TODO:fix deprecated function here.
+        int NodeId = id;
         Node selectedNode = graphNodesList[NodeId];
         //Node selectedNode = node;
 
-        lerpStartMarkers.Clear();
-        updateStartMarker(graphRoot);
+        //lerpStartMarkers.Clear();
+        //updateStartMarker();
 
         Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPositionUnscaled.x,
                                                 -selectedNode.nodeEuclideanPositionUnscaled.y,
@@ -729,10 +734,10 @@ public class GraphLayout : MonoBehaviour
         translateAllPointByMatrix(graphRoot, transformMat);
 
         lerpEndMarkers.Clear();
-        updateEndMarker(graphRoot);
+        updateEndMarker();
         updateNodeObjectPosition();
     }
-
+    /*
     public Vector3 lerp(float lerpStartTime, Vector3 startMarker, Vector3 endMarker)
     {
         float timeSinceStart = Time.time - lerpStartTime;
@@ -740,33 +745,24 @@ public class GraphLayout : MonoBehaviour
         return Vector3.Lerp(startMarker, endMarker, progressPercentage);
     }
 
-    public void updateStartMarker(Node parentNode)
+    
+    public void updateStartMarker()
     {
-        if (parentNode.nodeNumDecendents == 0)
+        for(int i = 0; i < graphNodesList.Count; i++)
         {
-            return;
-        }
-
-        foreach (Node child in parentNode.nodeChildren)
-        {
-            lerpStartMarkers.Add(new Vector3((float)child.nodeEuclideanPositionUnscaled.x,
-                                                 (float)child.nodeEuclideanPositionUnscaled.y,
-                                                 (float)child.nodeEuclideanPositionUnscaled.z));
+            lerpStartMarkers.Add(new Vector3((float)graphNodesList[i].nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.z * globalScaler));
         }
     }
-
-    public void updateEndMarker(Node parentNode)
+    */
+    public void updateEndMarker()
     {
-        if (parentNode.nodeNumDecendents == 0)
+        for (int i = 0; i < graphNodesList.Count; i++)
         {
-            return;
-        }
-
-        foreach (Node child in parentNode.nodeChildren)
-        {
-            lerpEndMarkers.Add(new Vector3((float)child.nodeEuclideanPositionUnscaled.x,
-                                                 (float)child.nodeEuclideanPositionUnscaled.y,
-                                                 (float)child.nodeEuclideanPositionUnscaled.z));
+            lerpEndMarkers.Add(new Vector3((float)graphNodesList[i].nodeEuclideanPositionUnscaled.x * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.y * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.z * globalScaler));
         }
     }
 
@@ -786,11 +782,19 @@ public class GraphLayout : MonoBehaviour
 
     public void updateNodeObjectPosition()
     {
+        /*
         lerpStartTime = Time.time;
 
         for(int i = 0; i < nodesPrimitives.Count; i++)
         {
             nodesPrimitives[i].transform.position = lerp(lerpStartTime, lerpStartMarkers[i], lerpEndMarkers[i]);
+        }
+        */
+        for (int i = 0; i < nodesPrimitives.Count; i++)
+        {
+            graphNode nodeScript = nodesPrimitives[i].GetComponent<graphNode>();
+            nodeScript.setStartMarker(nodeScript.transform.position);
+            nodeScript.setEndMarker(lerpEndMarkers[i]);
         }
     }
 

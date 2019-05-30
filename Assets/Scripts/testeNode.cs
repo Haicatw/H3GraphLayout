@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class graphNode : MonoBehaviour
+public class testeNode : MonoBehaviour
 {
     int id;
     public Vector3 startMarker;
@@ -15,7 +15,7 @@ public class graphNode : MonoBehaviour
     void Start()
     {
         startMarker = new Vector3(0, 0, 0);
-        endMarker = new Vector3(-100, -100, -100);
+        endMarker = new Vector3(100, -100, -100);
         errorValue = new Vector3(-100, -100, -100);
     }
 
