@@ -41,12 +41,12 @@ public class CamLook : MonoBehaviour
             if (Physics.Raycast(ray, out hit, 100.0f))
             {
                 GameObject gameObjectHit = hit.transform.gameObject;
-                //graphNode nodeScript = gameObjectHit.GetComponent<graphNode>();
-                //int id = nodeScript.getId();
-                //Debug.Log("Select: Node " + id);
+                graphNode nodeScript = gameObjectHit.GetComponent<graphNode>();
+                int id = nodeScript.id;
+                Debug.Log("Select: Node " + id);
                 GameObject graph = GameObject.FindGameObjectWithTag("GlobalManager");
                 GraphLayout graphScript = graph.GetComponent<GraphLayout>();
-                graphScript.updateTranslation(64);
+                graphScript.updateTranslation(id);
             }
         }
     }

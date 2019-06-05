@@ -49,7 +49,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: 0de6a2d823d9ffd46aecc5d085fe6097, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -139,3 +139,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d410496532453874786fe34d308ce60f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  startMarkerStart: {x: 0, y: 0, z: 0}
+  endMarkerStart: {x: 0, y: 0, z: 0}
+  startMarkerEnd: {x: 0, y: 0, z: 0}
+  endMarkerEnd: {x: 0, y: 0, z: 0}
+  parentNodeId: 0
+  childNodeId: 0
+  lerpTime: 0

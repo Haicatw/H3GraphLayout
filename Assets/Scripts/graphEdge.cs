@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/*
 public class graphEdge : MonoBehaviour
 {
     public Vector3 startMarkerStart;
@@ -23,12 +23,13 @@ public class graphEdge : MonoBehaviour
         startMarkerEnd = new Vector3(0, 0, 0);
         endMarkerEnd = new Vector3(-100, -100, -100);
         errorValue = new Vector3(-100, -100, -100);
-        lr = this.GetComponent<LineRenderer>();
+        //lr = this.GetComponent<LineRenderer>();
     }
 
     // Update is called once per frame
     void Update()
     {
+        lr = this.GetComponent<LineRenderer>();
         if (lr.GetPosition(0) != endMarkerStart 
             && endMarkerStart != errorValue 
             && lr.GetPosition(1) != endMarkerEnd
@@ -52,6 +53,7 @@ public class graphEdge : MonoBehaviour
     public void translateByanimation()
     {
         //float lerpStartTime = Time.time;
+        lr = this.GetComponent<LineRenderer>();
         lr.SetPosition(0, lerp(lerpStartTime, startMarkerStart, endMarkerStart));
         lr.SetPosition(1, lerp(lerpStartTime, startMarkerEnd, endMarkerEnd));
     }
@@ -89,6 +91,7 @@ public class graphEdge : MonoBehaviour
 
     public void setLineWidth(float lineWidth)
     {
+        lr = this.GetComponent<LineRenderer>();
         lr.SetWidth(lineWidth, lineWidth);
     }
 
@@ -106,5 +109,44 @@ public class graphEdge : MonoBehaviour
     {
         lr.SetPosition(0, start);
         lr.SetPosition(1, end);
+    }
+}
+*/
+public class graphEdge : MonoBehaviour
+{
+    public int parentNodeId;
+    public int childNodeId;
+    public GraphLayout graphLayoutScript;
+    private LineRenderer lr;
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        GameObject graph = GameObject.FindGameObjectWithTag("GlobalManager");
+        graphLayoutScript = graph.GetComponent<GraphLayout>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        lr = this.GetComponent<LineRenderer>();
+        lr.SetPosition(0, this.graphLayoutScript.nodesPrimitives[parentNodeId].transform.position);
+        lr.SetPosition(1, this.graphLayoutScript.nodesPrimitives[childNodeId].transform.position);
+    }
+
+    public void setParentId(int id)
+    {
+        this.parentNodeId = id;
+    }
+
+    public void setChildId(int id)
+    {
+        this.childNodeId = id;
+    }
+
+    public void setLineWidth(float lineWidth)
+    {
+        lr = this.GetComponent<LineRenderer>();
+        lr.SetWidth(lineWidth, lineWidth);
     }
 }

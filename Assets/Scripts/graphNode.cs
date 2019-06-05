@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class graphNode : MonoBehaviour
 {
-    int id;
+    public int id;
     public Vector3 startMarker;
     public Vector3 endMarker;
     public float lerpTime;
