@@ -308,6 +308,8 @@ public class GraphLayout : MonoBehaviour
     {
         Matrix4d I = new Matrix4d();
         I.setIdentity();
+        parentNode.nodeEuclideanPositionUnscaled = new Point4d(0, 0, 0, 1);
+        parentNode.SetNodeEuclideanPosition(0, 0, 0, 1);
         ComputeCoordinatesEuclideanRecursive(parentNode, I);
     }
 
@@ -331,9 +333,11 @@ public class GraphLayout : MonoBehaviour
                 parentTransformation.transform(childCoord);
                 parentTranslation.transform(childCoord);
                 child.nodeEuclideanPositionUnscaled = childCoord;
+                child.SetNodeEuclideanPosition(childCoord.x, childCoord.y, childCoord.z, childCoord.w);
 
                 Matrix4d rotationMat = HyperbolicMath.getRotationMatrix(origin, new Point4d(0.5, 0, 0, 1), child.nodeHemsphereTheta);
                 rotationMat *= HyperbolicMath.getRotationMatrix(origin, new Point4d(0, 0, 0.5, 1), child.nodeHemspherePhi);
+                //these two points are just used for indicating axis of rotation, they should be any vector indicate the direction state above but has length less than one
                 Matrix4d nextTransform = new Matrix4d();
                 nextTransform = parentTransformation * rotationMat;
 
@@ -343,12 +347,32 @@ public class GraphLayout : MonoBehaviour
         
     }
 
+    public void resetAllNodeEuclideanPositionToInitialPosition()
+    {
+        graphRoot.ResetEuclideanPositionToInitialPosition();
+        resetAllNodeEuclideanPositionToInitialPositionRecursive(graphRoot);
+    }
+
+    public void resetAllNodeEuclideanPositionToInitialPositionRecursive(Node parentNode)
+    {
+        if (parentNode.nodeNumDecendents == 0)
+        {
+            return;
+        }
+
+        foreach (Node child in parentNode.nodeChildren)
+        {
+            child.ResetEuclideanPositionToInitialPosition();
+            resetAllNodeEuclideanPositionToInitialPositionRecursive(child);
+        }
+    }
+
     public void DrawNodes()
     {
         nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
-        nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)graphRoot.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                                                                    (float)graphRoot.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                                                                    (float)graphRoot.nodeEuclideanPositionUnscaled.z * globalScaler);
+        nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)graphRoot.nodeEuclideanPosition.x * globalScaler,
+                                                                                    (float)graphRoot.nodeEuclideanPosition.y * globalScaler,
+                                                                                    (float)graphRoot.nodeEuclideanPosition.z * globalScaler);
         //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
         graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
         nodeScript.setId(graphRoot.nodeId);
@@ -362,9 +386,9 @@ public class GraphLayout : MonoBehaviour
         foreach (Node child in node.nodeChildren)
         {
             nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
-            nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                                                                        (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                                                                        (float)child.nodeEuclideanPositionUnscaled.z * globalScaler);
+            nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPosition.x * globalScaler,
+                                                                                        (float)child.nodeEuclideanPosition.y * globalScaler,
+                                                                                        (float)child.nodeEuclideanPosition.z * globalScaler);
             //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
             nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeId.ToString();
             graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
@@ -396,19 +420,20 @@ public class GraphLayout : MonoBehaviour
             edgeScript.setLineWidth(lineWidth);
             edgeScript.setParentId(parentNode.nodeId);
             edgeScript.setChildId(child.nodeId);
-            edgeScript.setStartEndPosition(new Vector3((float)parentNode.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                                      (float)parentNode.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                                      (float)parentNode.nodeEuclideanPositionUnscaled.z * globalScaler),
-                                           new Vector3((float)child.nodeEuclideanPositionUnscaled.x * globalScaler,
-                                                      (float)child.nodeEuclideanPositionUnscaled.y * globalScaler,
-                                                      (float)child.nodeEuclideanPositionUnscaled.z * globalScaler));
             */
+            edgeScript.setStartEndPosition(new Vector3((float)parentNode.nodeEuclideanPosition.x * globalScaler,
+                                                      (float)parentNode.nodeEuclideanPosition.y * globalScaler,
+                                                      (float)parentNode.nodeEuclideanPosition.z * globalScaler),
+                                           new Vector3((float)child.nodeEuclideanPosition.x * globalScaler,
+                                                      (float)child.nodeEuclideanPosition.y * globalScaler,
+                                                      (float)child.nodeEuclideanPosition.z * globalScaler));
             DrawEdges(child);
         }
     }
 
     public void updateTranslation(int id)
     {
+        /*
         int NodeId = id;
         if (currentFocusNodeId == NodeId)
         {
@@ -434,15 +459,45 @@ public class GraphLayout : MonoBehaviour
         lerpEndMarkers.Clear();
         updateEndMarker();
         updateNodeObjectPosition();
+        */
+        int NodeId = id;
+        if (currentFocusNodeId == NodeId)
+        {
+            return;
+        }
+        else
+        {
+            currentFocusNodeId = NodeId;
+        }
+        Node selectedNode = graphNodesList[NodeId];
+        //Node selectedNode = node;
+
+        //lerpStartMarkers.Clear();
+        //updateStartMarker();
+
+        Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPosition.x,
+                                                -selectedNode.nodeEuclideanPosition.y,
+                                                -selectedNode.nodeEuclideanPosition.z,
+                                                selectedNode.nodeEuclideanPosition.w);
+        //get initial layout value for all operations to ensure precision issues.
+        resetAllNodeEuclideanPositionToInitialPosition();
+        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
+        transformMat.transform(graphRoot.nodeEuclideanPosition);
+        translateAllPointByMatrix(graphRoot, transformMat);
+
+        lerpEndMarkers.Clear();
+        updateEndMarker();
+        updateNodeObjectPosition();
+        initializeEdgeScript();
     }
  
     public void updateEndMarker()
     {
         for (int i = 0; i < graphNodesList.Count; i++)
         {
-            lerpEndMarkers.Add(new Vector3((float)graphNodesList[i].nodeEuclideanPositionUnscaled.x * globalScaler,
-                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.y * globalScaler,
-                                                 (float)graphNodesList[i].nodeEuclideanPositionUnscaled.z * globalScaler));
+            lerpEndMarkers.Add(new Vector3((float)graphNodesList[i].nodeEuclideanPosition.x * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPosition.y * globalScaler,
+                                                 (float)graphNodesList[i].nodeEuclideanPosition.z * globalScaler));
         }
     }
 
@@ -455,7 +510,7 @@ public class GraphLayout : MonoBehaviour
 
         foreach (Node child in parentNode.nodeChildren)
         {
-            transformMat.transform(child.nodeEuclideanPositionUnscaled);
+            transformMat.transform(child.nodeEuclideanPosition);
             translateAllPointByMatrix(child, transformMat);
         }
     }
@@ -475,6 +530,15 @@ public class GraphLayout : MonoBehaviour
             graphNode nodeScript = nodesPrimitives[i].GetComponent<graphNode>();
             nodeScript.setStartMarker(nodeScript.transform.position);
             nodeScript.setEndMarker(lerpEndMarkers[i]);
+        }
+    }
+
+    public void initializeEdgeScript()
+    {
+        for (int i = 0; i < edgeHolders.Count; i++)
+        {
+            graphEdge edgeScript = edgeHolders[i].GetComponent<graphEdge>();
+            edgeScript.initialized = true;
         }
     }
 
@@ -546,12 +610,25 @@ public class Node
         this.nodeEuclideanPosition = new Point4d(x, y, z, w);
     }
 
+    public void SetNodeEuclideanPositionUnscaled(double x, double y, double z, double w)
+    {
+        this.nodeEuclideanPositionUnscaled = new Point4d(x, y, z, w);
+    }
+
+    public void ResetEuclideanPositionToInitialPosition()
+    {
+        this.SetNodeEuclideanPosition(this.nodeEuclideanPositionUnscaled.x, 
+                                        this.nodeEuclideanPositionUnscaled.y, 
+                                        this.nodeEuclideanPositionUnscaled.z, 
+                                        this.nodeEuclideanPositionUnscaled.w);
+    }
+
     public void SetNodeRelativeHyperbolicProjectionPosition(double x, double y, double z, double w)
     {
         this.nodeRelativeHyperbolicProjectionPosition = new Point4d(x, y, z, w);
     }
 
-    public void CalculateAndSetNodeEuclideanPosition()
+    public void CalculateAndSetNodeEuclideanPosition() //not used in the program
     {
         double x = this.nodeR * Math.Sin(this.nodeAnglePhi) * Math.Cos(this.nodeAngleTheta);
         double y = this.nodeR * Math.Sin(this.nodeAnglePhi) * Math.Sin(this.nodeAngleTheta);
