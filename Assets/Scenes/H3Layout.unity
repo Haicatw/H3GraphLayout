@@ -177,6 +177,9 @@ MonoBehaviour:
   edgePrefab: {fileID: 6656735984258731039, guid: 8f75bce7f1fdd9d40895ca24430537b5,
     type: 3}
   lerpTime: 5
+  currentFocusNodeId: 0
+  nodesPrimitives: []
+  edgeHolders: []
 --- !u!1 &170076733
 GameObject:
   m_ObjectHideFlags: 0
@@ -250,7 +253,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 1.5309205e-28, y: NaN, z: NaN, w: 0}
+  m_BoundingSphereOverride: {x: 0, y: 1e-45, z: 0, w: 0}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0

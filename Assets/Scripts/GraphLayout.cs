@@ -63,15 +63,15 @@ public class GraphLayout : MonoBehaviour
         ComputeRadius(this.graphRoot);
         Debug.Log("Finish Calculating Radius");
         SortSubtrees(this.graphRoot);
-        Debug.Log("Finish Sorting");
+        Debug.Log("Finish Sorting Decendents");
         ComputePolar(this.graphRoot);
         ComputeRelativeHyperbolicProjectionPosition(this.graphRoot);
-        Debug.Log("Finish Polar");
+        Debug.Log("Finish Compute Polar Coordinates");
         ComputeCoordinatesEuclidean(this.graphRoot);
-        //ComputeCoordinates();
-        //Scaling(graphRoot);
-        DrawNodes();
-        DrawEdges(this.graphRoot);
+        Debug.Log("Finish Compute Euclidean Coordinates");
+        //Create Node and Edge instances
+        GenerateNodesToScene();
+        GenerateEdgesToScene(this.graphRoot);
         //DebugPrint(this.graphRoot);
     }
 
@@ -252,20 +252,20 @@ public class GraphLayout : MonoBehaviour
         }
     }
 
-    public void ComputeGlobalPolarAngle(Node parentNode)
-    {
-        if (parentNode.nodeNumDecendents == 0)
-        {
-            return;
-        }
-        else
-        {
-            foreach(Node child in parentNode.nodeChildren)
-            {
-                //child.nodeAnglePhi += parentNode.
-            }
-        }
-    }
+    //public void ComputeGlobalPolarAngle(Node parentNode)
+    //{
+    //    if (parentNode.nodeNumDecendents == 0)
+    //    {
+    //        return;
+    //    }
+    //    else
+    //    {
+    //        foreach(Node child in parentNode.nodeChildren)
+    //        {
+    //            //child.nodeAnglePhi += parentNode.
+    //        }
+    //    }
+    //}
 
     public void ComputeRelativeHyperbolicProjectionPosition(Node parentNode)
     {
@@ -346,7 +346,10 @@ public class GraphLayout : MonoBehaviour
         }
         
     }
-
+    
+    //Consider the precision issue, maintaining an copy of initial coordinate is necessary. Following transformation should be transformed from the original coordinates here
+    //This part need more testing to see if precision is that significat or not.
+    //The original version actually transform graph from its current position.
     public void resetAllNodeEuclideanPositionToInitialPosition()
     {
         graphRoot.ResetEuclideanPositionToInitialPosition();
@@ -366,41 +369,23 @@ public class GraphLayout : MonoBehaviour
             resetAllNodeEuclideanPositionToInitialPositionRecursive(child);
         }
     }
-
-    public void DrawNodes()
+    
+    public void GenerateNodesToScene()
     {
-        nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
-        nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)graphRoot.nodeEuclideanPosition.x * globalScaler,
-                                                                                    (float)graphRoot.nodeEuclideanPosition.y * globalScaler,
-                                                                                    (float)graphRoot.nodeEuclideanPosition.z * globalScaler);
-        //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
-        graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
-        nodeScript.setId(graphRoot.nodeId);
-        nodeScript.setLerpTime(lerpTime);
-        nodesPrimitives[nodesPrimitives.Count - 1].name = graphRoot.nodeName;
-        DrawNodesRecursive(graphRoot);
-    }
-
-    public void DrawNodesRecursive(Node node)
-    {
-        foreach (Node child in node.nodeChildren)
+        foreach(Node node in graphNodesList)
         {
             nodesPrimitives.Add((GameObject)Instantiate(nodePrefab));
-            nodesPrimitives[nodesPrimitives.Count - 1].transform.position = new Vector3((float)child.nodeEuclideanPosition.x * globalScaler,
-                                                                                        (float)child.nodeEuclideanPosition.y * globalScaler,
-                                                                                        (float)child.nodeEuclideanPosition.z * globalScaler);
-            //nodesPrimitives[nodesPrimitives.Count - 1].transform.localScale = Vector3.one * 0.01f;
-            nodesPrimitives[nodesPrimitives.Count - 1].name = child.nodeId.ToString();
-            graphNode nodeScript = nodesPrimitives[nodesPrimitives.Count - 1].GetComponent<graphNode>();
-            nodeScript.setId(child.nodeId);
+            nodesPrimitives[node.nodeId].transform.position = new Vector3((float)node.nodeEuclideanPosition.x * globalScaler,
+                                                                                        (float)node.nodeEuclideanPosition.y * globalScaler,
+                                                                                        (float)node.nodeEuclideanPosition.z * globalScaler);
+            graphNode nodeScript = nodesPrimitives[node.nodeId].GetComponent<graphNode>();
+            nodeScript.setId(node.nodeId);
             nodeScript.setLerpTime(lerpTime);
-            //nodesPrimitives[nodesPrimitives.Count - 1].AddComponent<>();
-            //nodesPrimitives[nodesPrimitives.Count - 1].tag = child.nodeId.ToString();
-            DrawNodesRecursive(child);
+            nodesPrimitives[node.nodeId].name = node.nodeName;
         }
     }
-    
-    public void DrawEdges(Node parentNode)
+
+    public void GenerateEdgesToScene(Node parentNode)
     {
         if (parentNode.nodeNumDecendents == 0)
         {
@@ -427,39 +412,12 @@ public class GraphLayout : MonoBehaviour
                                            new Vector3((float)child.nodeEuclideanPosition.x * globalScaler,
                                                       (float)child.nodeEuclideanPosition.y * globalScaler,
                                                       (float)child.nodeEuclideanPosition.z * globalScaler));
-            DrawEdges(child);
+            GenerateEdgesToScene(child);
         }
     }
 
     public void updateTranslation(int id)
     {
-        /*
-        int NodeId = id;
-        if (currentFocusNodeId == NodeId)
-        {
-            return;
-        } else
-        {
-            currentFocusNodeId = NodeId;
-        }
-        Node selectedNode = graphNodesList[NodeId];
-        //Node selectedNode = node;
-
-        //lerpStartMarkers.Clear();
-        //updateStartMarker();
-
-        Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPositionUnscaled.x,
-                                                -selectedNode.nodeEuclideanPositionUnscaled.y,
-                                                -selectedNode.nodeEuclideanPositionUnscaled.z,
-                                                selectedNode.nodeEuclideanPositionUnscaled.w);
-        Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
-        transformMat.transform(graphRoot.nodeEuclideanPositionUnscaled);
-        translateAllPointByMatrix(graphRoot, transformMat);
-
-        lerpEndMarkers.Clear();
-        updateEndMarker();
-        updateNodeObjectPosition();
-        */
         int NodeId = id;
         if (currentFocusNodeId == NodeId)
         {
@@ -475,12 +433,12 @@ public class GraphLayout : MonoBehaviour
         //lerpStartMarkers.Clear();
         //updateStartMarker();
 
+        resetAllNodeEuclideanPositionToInitialPosition();
         Point4d negateTransVect = new Point4d(-selectedNode.nodeEuclideanPosition.x,
                                                 -selectedNode.nodeEuclideanPosition.y,
                                                 -selectedNode.nodeEuclideanPosition.z,
                                                 selectedNode.nodeEuclideanPosition.w);
         //get initial layout value for all operations to ensure precision issues.
-        resetAllNodeEuclideanPositionToInitialPosition();
         Matrix4d transformMat = HyperbolicMath.getTranslationMatrix(new Point4d(), negateTransVect);
         transformMat.transform(graphRoot.nodeEuclideanPosition);
         translateAllPointByMatrix(graphRoot, transformMat);
@@ -959,25 +917,6 @@ public class Point4d
         this.w = w;
     }
 
-    public void scale(double s)
-    {
-        this.x = this.x * s;
-        this.y = this.y * s;
-        this.z = this.z * s;
-        this.w = this.w * s;
-    }
-
-    // this = s*t1 + t2
-    public void scaleAdd(double s, Point4d t1, Point4d t2)
-    {
-        double tx = t1.x * s + (t2.x);
-        double ty = t1.y * s + (t2.y);
-        double tz = t1.z * s + (t2.z);
-        double tw = t1.w * s + (t2.w);
-
-        this.x = tx; this.y = ty; this.z = tz; this.w = tw;
-    }
-
     public void normalizeHomoCoord()
     {
         double tx = this.x / (this.w);
@@ -986,65 +925,7 @@ public class Point4d
 
         this.x = tx; this.y = ty; this.z = tz; this.w = 1.0;
     }
-
-    public void sub(Point4d t1)
-    {
-        this.x = this.x - (t1.x);
-        this.y = this.y - (t1.y);
-        this.z = this.z - (t1.z);
-        this.w = this.w - (t1.w);
-    }
-
-    public void set(Point4d t1)
-    {
-        this.x = t1.x; this.y = t1.y; this.z = t1.z; this.w = t1.w;
-    }
-
-    public void set(double x, double y, double z, double w)
-    {
-        this.x = x; this.y = y; this.z = z; this.w = w;
-    }
-
-    // Euclidean norm of homogeneous coordinates [and equivalent to
-    // Point4d.distance(new Point4d(0, 0, 0, 0))].
-    public double vectorLength(Point4d p)
-    {
-        double x2 = this.x * this.x;
-        double y2 = this.y * this.y;
-        double z2 = this.z * this.z;
-        double w2 = this.w * this.w;
-        return x2 + (y2) + (z2) / Math.Sqrt(w2);
-    }
-
-    // The usual vector dot product.
-    public double vectorDot(Point4d v1)
-    {
-        double tx = this.x * (v1.x);
-        double ty = this.y * (v1.y);
-        double tz = this.z * (v1.z);
-        double tw = this.w * (v1.w);
-        return tx + (ty) + (tz) + (tw);
-    }
-
-    // The usual vector dot product computed from x, y, and z only.
-    public double vectorDot3(Point4d v1)
-    {
-        double tx = this.x * (v1.x);
-        double ty = this.y * (v1.y);
-        double tz = this.z * (v1.z);
-        return tx + (ty) + (tz);
-    }
-
-    // Returns the Minkowski inner product of this with y.
-    public double minkowski(Point4d v)
-    {
-        double tx = this.x * (v.x);
-        double ty = this.y * (v.y);
-        double tz = this.z * (v.z);
-        double tw = this.w * (v.w);
-        return tx + (ty) + (tz) - (tw);
-    }
-
+    
     public static implicit operator Point4d(Vector4 vect)
     {
         return new Point4d(vect.x, vect.y, vect.z, vect.w);
@@ -1130,69 +1011,6 @@ public class Point4d
         this.y /= this.w;
         this.z /= this.w;
         this.w = 1;
-    }
-
-    public static double getPhiByPoint(Point4d p)
-    {
-        if (p.z == 0.0)
-        {
-            return 0.0;
-        }
-        return Math.Atan(Math.Sqrt(p.x * p.x + p.y * p.y) / p.z);
-    }
-
-    public static double getThetaByPoint(Point4d p)
-    {
-        if(p.y == 0.0)
-        {
-            return 0.0;
-        }
-        return Math.Atan(p.y / p.x);
-    }
-
-    public static double getRotAngleX(Point4d p)
-    {
-        double xAngRot;
-        if (p.z == 0.0)
-        {
-            xAngRot = 0.0;
-        }
-        else
-        {
-            xAngRot = Math.Atan(p.y / p.z);
-        }
-        return xAngRot;
-    }
-
-    public static double getRotAngleY(Point4d p)
-    {
-        double yAngRot;
-        if (p.z == 0.0)
-        {
-            yAngRot = 0.0;
-        }
-        else
-        {
-            yAngRot = Math.Atan(p.x / p.z);
-        }
-        return yAngRot;
-    }
-
-    public void toUnitVect()
-    {
-        double length;
-        length = Math.Pow(this.x, 2) + Math.Pow(this.y, 2) + Math.Pow(this.z, 2);
-        length = Math.Sqrt(length);
-
-        this.x /= length;
-        this.y /= length;
-        this.z /= length;
-    }
-
-    public Vector3 GetVector3()
-    {
-        this.normalizeHomoCoord();
-        return new Vector3((float)this.x, (float)this.y, (float)this.z);
     }
 }
 
@@ -1297,31 +1115,6 @@ class HyperbolicMath
         return Math.Sqrt(1.0 - 1.0 / (y * y));
     }
 
-    public static double dotProduct(Vector3 x, Vector3 y)
-    {
-        return x.x * y.x + x.y * y.y + x.z * y.z;
-    }
-
-    public static double dotProduct(Point4d x, Point4d y)
-    {
-        return (x.x * y.x + x.y * y.y + x.z * y.z) / (x.w * y.w);
-    }
-
-    public static double vectorLength(Point4d p)
-    {
-        double w2 = p.w * p.w;
-        return Math.Sqrt((p.x * p.x + p.y * p.y + p.z * p.z) / w2);
-    }
-
-    public static void makeUnitVector(Point4d p)
-    {
-        double s = p.w * vectorLength(p);
-        p.x /= s;
-        p.y /= s;
-        p.z /= s;
-        p.w = 1.0;
-    }
-
     public static double ASinh(double value)
     {
         double temp = value + Math.Sqrt(Math.Pow(value, 2.0) + 1);
@@ -1333,9 +1126,9 @@ public class HyperbolicTransformation
 {
     public static Point4d ORIGIN4 = new Point4d( 0.0, 0.0, 0.0, 1.0 );
     public static Matrix4d I4 = new Matrix4d(1.0, 0.0, 0.0, 0.0,
-                                 0.0, 1.0, 0.0, 0.0,
-                                 0.0, 0.0, 1.0, 0.0,
-                                 0.0, 0.0, 0.0, 1.0);
+                                             0.0, 1.0, 0.0, 0.0,
+                                             0.0, 0.0, 1.0, 0.0,
+                                             0.0, 0.0, 0.0, 1.0);
 
     public static Matrix4d buildTranslation(Point4d source, Point4d dest)
     {
