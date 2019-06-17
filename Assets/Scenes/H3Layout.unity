@@ -165,12 +165,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   networkFolder: Data
-  networkName: processedPower.json
-  leafRadius: 0.02
+  networkName: simple_.json
+  leafRadius: 0.5
   color: {r: 0, g: 0, b: 0, a: 0}
   lineMaterial: {fileID: 2100000, guid: 0de6a2d823d9ffd46aecc5d085fe6097, type: 2}
   globalScaler: 100
-  lineWidth: 0.05
+  lineWidth: 1
   randeringRadius: 1
   nodePrefab: {fileID: 7635653176916618192, guid: 362c68fa5b687584f89f6cd1fd190aab,
     type: 3}
@@ -253,7 +253,7 @@ Light:
   m_BounceIntensity: 1
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
-  m_BoundingSphereOverride: {x: 0, y: 1e-45, z: 0, w: 0}
+  m_BoundingSphereOverride: {x: -1.14e-43, y: -1.49e-43, z: 1e-45, w: 5.9e-44}
   m_UseBoundingSphereOverride: 0
   m_ShadowRadius: 0
   m_ShadowAngle: 0
@@ -308,8 +308,8 @@ Camera:
   m_GameObject: {fileID: 534669902}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0, g: 0, b: 0, a: 0}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -350,7 +350,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: -5, y: 1, z: 0}
+  m_LocalPosition: {x: -5, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -113,7 +113,9 @@ public class GraphLayout : MonoBehaviour
         foreach(Link link in this.graphContainer.links)
         {
             //print(link.source);
+            Debug.Log(link.source);
             Node tempNodeA = this.graphNodesList[this.nodeNameToIdDict[link.source]];
+            Debug.Log(link.target);
             Node tempNodeB = this.graphNodesList[this.nodeNameToIdDict[link.target]];
             
             if (tempNodeA.nodeLevel > tempNodeB.nodeLevel)
@@ -187,8 +189,8 @@ public class GraphLayout : MonoBehaviour
                 //Hyperbolic Space Case:
                 //H3Math.TWO_PI * (H3Math.cosh(r / K) - 1.0);
                 //parentHemsphereArea += (double)(Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius / 2) - 1));
-                //parentHemsphereArea += Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius) - 1);
-                parentHemsphereArea += Math.PI * 2 * Math.Pow(child.nodeHemsphereRadius, 2);
+                parentHemsphereArea += Math.PI * 2 * (Math.Cosh(child.nodeHemsphereRadius) - 1);
+                //parentHemsphereArea += Math.PI * 2 * Math.Pow(child.nodeHemsphereRadius, 2);
             }
             //Euclidean Space Case:
             //parentNode.nodeHemsphereRadius = Math.Sqrt(parentHemsphereArea);
@@ -236,7 +238,6 @@ public class GraphLayout : MonoBehaviour
                     deltaPhiCumulatiive += (double)Math.Atan(Math.Tanh(currentGreatestChildRadius) / Math.Sinh(parentNode.nodeHemsphereRadius));
                     deltaThetaCumulative = 0.0;
                     currentGreatestChildRadius = child.nodeHemsphereRadius;//children is already sorted
-                    //TODO: check if first hemisphere need exception
                 }
 
                 child.nodeHemspherePhi = deltaPhiCumulatiive;

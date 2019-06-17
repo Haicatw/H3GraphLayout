@@ -1,0 +1,246 @@
+{
+  "nodes": [
+    {
+      "nodeName": "invisible",
+      "level": 0,
+      "isRootNode": true
+    },
+    {
+      "nodeName": "http://foo.bar/",
+      "level": 1,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/",
+      "level": 1,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/index.html",
+      "level": 2,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainIndex.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonFeedback.gif",
+      "level": 4,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonSignIn.gif",
+      "level": 4,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/orphan0.html",
+      "level": 2,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew1.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew2.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew3.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonSignIn.gif_",
+      "level": 4,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew3.gif_",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew5.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew6.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew7.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew8.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew9.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonMainNew10.gif",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/orphan1.html",
+      "level": 2,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/orphan2.html",
+      "level": 2,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/Images/buttonSignIn.gif__",
+      "level": 3,
+      "isRootNode": false
+    },
+    {
+      "nodeName": "http://hyper.engr/orphan3.html",
+      "level": 2,
+      "isRootNode": false
+    }
+  ],
+  "links": [
+    {
+      "source": "invisible",
+      "target": "http://foo.bar/",
+      "value": 1
+    },
+    {
+      "source": "invisible",
+      "target": "http://hyper.engr/",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/",
+      "target": "http://hyper.engr/orphan3.html",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/",
+      "target": "http://hyper.engr/orphan1.html",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/",
+      "target": "http://hyper.engr/orphan2.html",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan2.html",
+      "target": "http://hyper.engr/Images/buttonSignIn.gif__",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/",
+      "target": "http://hyper.engr/orphan0.html",
+      "value": 1
+    },
+    {
+        "source": "http://hyper.engr/",
+        "target": "http://hyper.engr/index.html",
+        "value": 1
+    },
+    {
+      "source": "http://hyper.engr/index.html",
+      "target": "http://hyper.engr/Images/buttonMainNew.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/index.html",
+      "target": "http://hyper.engr/Images/buttonMainIndex.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/Images/buttonMainIndex.gif",
+      "target": "http://hyper.engr/Images/buttonSignIn.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/Images/buttonMainIndex.gif",
+      "target": "http://hyper.engr/Images/buttonFeedback.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew10.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew8.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew9.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew1.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew2.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew3.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew3.gif_",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew5.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew6.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/orphan0.html",
+      "target": "http://hyper.engr/Images/buttonMainNew7.gif",
+      "value": 1
+    },
+    {
+      "source": "http://hyper.engr/Images/buttonMainNew3.gif",
+      "target": "http://hyper.engr/Images/buttonSignIn.gif_",
+      "value": 1
+    }
+  ],
+  "metadata": {
+    "NumNodes": 24,
+    "NumLinks": 23,
+    "MaxLevel": 4
+  }
+}
